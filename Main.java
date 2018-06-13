@@ -46,6 +46,7 @@ public class Main {
 		}
 		return;
 	}
+	
 	public static String getDeveloperID() {return developerID;}
 	public static void setDeveloperID() {
 		BufferedReader in;
@@ -61,10 +62,7 @@ public class Main {
 		return;
 	}
 
-	public static String getBotID() {
-		return botID;
-	}
-
+	public static String getBotID() {return botID;}
 	public static void setBotID() {
 		BufferedReader in;
 		try {

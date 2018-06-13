@@ -234,11 +234,14 @@ public class Commands implements MessageCreateListener {
 						else if(unlink((e.getMessage().getAuthor() + "").substring((e.getMessage().getAuthor() + "").indexOf("id") + 4,(e.getMessage().getAuthor() + "").indexOf(","))))
 							//Send a message to the requester stating that they are no longer registered.
 							e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "You are no longer registered to a Nitro Type account."));
+						//Else the registration failed send a message to the requester informing them of the error
 						else e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "The account was unable to be unregistered. Please try again, or contact " + Main.getDeveloperID() +" to attempt to resolve this issue."));
 					} 
-					
+					//Else if the command is info
 					else if(Main.commands[loc][0].equalsIgnoreCase("l.info")) {
-						e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), Main.getBotID() + " is made by Nes370. She is written in Java using BtoBastian's Javacord library.\nIf you wish to add her to a server, please contact " + Main.getDeveloperID() + "."));
+						//Send a message to the requester about the bot
+						e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), Main.getBotID() + " is made by Nes370. She is written in Java using BtoBastian's Javacord library.\nhttps://github.com/Nes370/lolydealer\nIf you wish to add her to a server, please contact " + Main.getDeveloperID() + "."));
+						//Print a log to the console declaring the information was sent
 						System.out.println("Bot information sent.");
 					}
 				//Else the command is not implemented	
