@@ -13,14 +13,15 @@ public class Main {
 	
 	public static String[][] commands = {
 			{"L.help", "Show this list of commands."},
-			{"L.register", "Register an account to your Discord ID. `l.register [Account]`"},
-			{"L.unregister", "Remove a linked account from your Discord ID. `l.unregister`"},
-			{"L.value", "Evaluate an account. `l.value [Account] [Bonus]`"},
-			{"L.cars", "Rank an account's cars. `l.cars [Account] [Cars]`"},
+			{"L.value", "Evaluate an account.\n`l.value [username or @discordname] [bonus value]`"},
+			{"L.cars", "Rank an account's cars.\n`l.cars [username or @discordname] [number of cars]`"},
+			{"L.register", "Register an account to your Discord ID.\n`l.register [username]`"},
+			{"L.unregister", "Remove a linked account from your Discord ID."},
+			//L.soldCars [Account]
+			//L.team [Account/Team]
 			{"L.info", "Learn about this bot."}
 	};
-	private static String token;
-	public static String developerID, botID;
+	private static String token, developerID, botID;
 	public static void main(String[] args) {
 		setToken();
 		setDeveloperID();

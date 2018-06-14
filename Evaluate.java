@@ -1,18 +1,21 @@
 package com.github.nes370.lolydealer;
 
+import java.awt.Color;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
 
+import org.javacord.api.entity.message.embed.EmbedBuilder;
+
 public class Evaluate {
 
-	public static String main(String arg) throws Exception {
+	public static EmbedBuilder main(String arg) throws Exception {
 		
-		int bonus = 0;
+		long bonus = 0;
 		String url = "";
 		if(arg.indexOf(" ") != -1) {
 			url = "https://www.nitrotype.com/racer/" + arg.substring(0, arg.indexOf(" "));
-			bonus = Integer.parseInt(arg.substring(arg.indexOf(" ") + 1));
+			bonus = Long.parseLong(arg.substring(arg.indexOf(" ") + 1));
 		} else url = "https://www.nitrotype.com/racer/" + arg;
 		
 		System.setProperty("http.agent", "Chrome");
@@ -31,6 +34,8 @@ public class Evaluate {
 		if(racerInfo.substring((index = racerInfo.indexOf("membership") + 13), index + racerInfo.substring(index).indexOf("\"")).equals("gold"))			
 			gold = 1;
 		
+		String team = racerInfo.substring(index = racerInfo.indexOf("tag") + 5, index + racerInfo.substring(index).indexOf(","));
+		
 		String displayName = racerInfo.substring((index = racerInfo.indexOf("displayName") + 14), index + racerInfo.substring(index).indexOf("\""));
 		if(displayName.equals("") || displayName.equals("ull,"))
 			displayName = racerInfo.substring((index = racerInfo.indexOf("username") + 11), index + racerInfo.substring(index).indexOf("\""));
@@ -48,7 +53,8 @@ public class Evaluate {
 		
 		int session = Integer.parseInt(racerInfo.substring((index = racerInfo.indexOf("longestSession") + 16), index + racerInfo.substring(index).indexOf(',')));
 		
-		double age = ((System.currentTimeMillis() / 1000) - Long.parseLong(racerInfo.substring((index = racerInfo.indexOf("createdStamp") + 14), index + racerInfo.substring(index).indexOf(',')))) / 31536000.0;
+		double age = ((System.currentTimeMillis() / 1000) - Long.parseLong(racerInfo.substring((index = racerInfo.indexOf("createdStamp") + 14), 
+				index + racerInfo.substring(index).indexOf(',')))) / 31536000.0;
 		
 		u = new URL("https://www.nitrotype.com/index/605/bootstrap.js");
 		HttpURLConnection d = (HttpURLConnection) u.openConnection();
@@ -67,7 +73,8 @@ public class Evaluate {
 		for(int i = 0; i < size; i++) {	
 			index += carsInfo.substring(index + 1).indexOf("{") + 1;
 			carValues[Integer.parseInt(carsInfo.substring(index + 9, index + carsInfo.substring(index).indexOf(','))) - 1] 
-					= Integer.parseInt(carsInfo.substring(index + carsInfo.substring(index).indexOf("price") + 7, index + carsInfo.substring(index).indexOf("price") + 7 + carsInfo.substring(index + carsInfo.substring(index).indexOf("price") + 7).indexOf(",")));
+					= Integer.parseInt(carsInfo.substring(index + carsInfo.substring(index).indexOf("price") + 7, 
+							index + carsInfo.substring(index).indexOf("price") + 7 + carsInfo.substring(index + carsInfo.substring(index).indexOf("price") + 7).indexOf(",")));
 		}
 		
 		byte[] cars = new byte[Integer.parseInt(carsInfo.substring(carsInfo.lastIndexOf("id") + 4, carsInfo.lastIndexOf("}")))];
@@ -131,38 +138,29 @@ public class Evaluate {
 		
 		long liquid = money + nitros * 500 + liquidCars; 
 		long subjective = (long)(gold * 10000000 + Math.pow(2.0, age) * 50000 + experience + races * 1000 + session * 2000 + subjectiveCars + bonus);
-		if(bonus == 0)
-			return "\n__**" + displayName + "**__: " + url 
-				+ "\n__**Total Value**__: " + moneyToText(liquid + subjective)
-				+ "\n	**Liquid**: " + fractionToText(liquid, liquid + subjective)
-				+ "	**Subjective**: " + fractionToText(subjective, liquid + subjective)
-				+ "\n__**Liquid**__: " + moneyToText(liquid)
-				+ "\n	**Cash**: " + fractionToText(money, liquid)
-				+ "	**Nitros**: " + fractionToText(nitros * 500, liquid)
-				+ "\n	**Cars**: " + fractionToText(liquidCars, liquid)
-				+ "\n__**Subjective**__: " + moneyToText(subjective)
-				+ "\n	**Gold**: " + fractionToText(gold * 10000000, subjective)
-				+ "	**Age**: " + fractionToText(Math.pow(2.0, age) * 50000, subjective)
-				+ "\n	**Experience**: " + fractionToText(experience, subjective)
-				+ "	**Races**: " + fractionToText(races * 1000, subjective)
-				+ "\n	**Longest Session**: " + fractionToText(session * 2000, subjective)
-				+ "	**Cars**: " + fractionToText(subjectiveCars, subjective);
-		else return "\n__**" + displayName + "**__: " + url
-				+ "\n__**Total Value**__: " + moneyToText(liquid + subjective)
-				+ "\n	**Liquid**: " + fractionToText(liquid, liquid + subjective)
-				+ "	**Subjective**: " + fractionToText(subjective, liquid + subjective)
-				+ "\n__**Liquid**__: " + moneyToText(liquid)
-				+ "\n	**Cash**: " + fractionToText(money, liquid)
-				+ "	**Nitros**: " + fractionToText(nitros * 500, liquid)
-				+ "\n	**Cars**: " + fractionToText(liquidCars, liquid)
-				+ "\n__**Subjective**__: " + moneyToText(subjective)
-				+ "\n	**Gold**: " + fractionToText(gold * 10000000, subjective)
-				+ "	**Age**: " + fractionToText(Math.pow(2.0, age) * 50000, subjective)
-				+ "\n	**Experience**: " + fractionToText(experience, subjective)
-				+ "	**Races**: " + fractionToText(races * 1000, subjective)
-				+ "\n	**Longest Session**: " + fractionToText(session * 2000, subjective)
-				+ "	**Cars**: " + fractionToText(subjectiveCars, subjective)
-				+ "\n	**Bonus**: " + fractionToText(bonus, subjective);
+		
+		if(team.contains("\""))
+			displayName = "[" + team.substring(1, team.length() - 1) + "]" + displayName;
+		
+		EmbedBuilder embed = new EmbedBuilder().setTitle("__**Account Value**__:").setDescription(moneyToText(liquid + subjective))
+				.setAuthor(displayName, url, "")
+				.setColor(Color.PINK)
+				.addInlineField("Liquid", fractionToText(liquid, liquid + subjective))
+				.addInlineField("Subjective", fractionToText(subjective, liquid + subjective))
+				.addField("__**Liquid Value**__:", moneyToText(liquid))
+				.addInlineField("Cash", fractionToText(money, liquid))
+				.addInlineField("Nitros", fractionToText(nitros * 500, liquid))
+				.addInlineField("Cars", fractionToText(liquidCars, liquid))
+				.addField("__**Subjective Value**__:", moneyToText(subjective))
+				.addInlineField("Gold", fractionToText(gold * 10000000, subjective))
+				.addInlineField("Age", fractionToText(Math.pow(2.0, age) * 50000, subjective))
+				.addInlineField("Experience", fractionToText(experience, subjective))
+				.addInlineField("Races", fractionToText(races * 1000, subjective))
+				.addInlineField("Longest Session", fractionToText(session * 2000, subjective))
+				.addInlineField("Cars", fractionToText(subjectiveCars, subjective));
+		if(bonus !=0)
+			embed.addInlineField("Bonus", fractionToText(bonus, subjective));
+		return embed;
 	}
 
 	public static String fractionToText(long nominator, long denominator) {

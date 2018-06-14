@@ -1,12 +1,15 @@
 package com.github.nes370.lolydealer;
 
+import java.awt.Color;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
 
+import org.javacord.api.entity.message.embed.EmbedBuilder;
+
 public class RankCars {
 	
-	public static String main(String arg) throws Exception {
+	public static EmbedBuilder main(String arg) throws Exception {
 		
 		int displayCars = 10;
 		String url = "";
@@ -53,7 +56,9 @@ public class RankCars {
 		index = 0;
 		for(int i = 0; i < size; i++) {	
 			index += carsInfo.substring(index + 1).indexOf("{") + 1;
-			carValues[Integer.parseInt(carsInfo.substring(index + 9, index + carsInfo.substring(index).indexOf(','))) - 1] = Integer.parseInt(carsInfo.substring(index + carsInfo.substring(index).indexOf("price") + 7, index + carsInfo.substring(index).indexOf("price") + 7 + carsInfo.substring(index + carsInfo.substring(index).indexOf("price") + 7).indexOf(",")));
+			carValues[Integer.parseInt(carsInfo.substring(index + 9, index + carsInfo.substring(index).indexOf(','))) - 1] 
+					= Integer.parseInt(carsInfo.substring(index + carsInfo.substring(index).indexOf("price") + 7, 
+							index + carsInfo.substring(index).indexOf("price") + 7 + carsInfo.substring(index + carsInfo.substring(index).indexOf("price") + 7).indexOf(",")));
 		}
 		
 		byte[] cars = new byte[Integer.parseInt(carsInfo.substring(carsInfo.lastIndexOf("id") + 4, carsInfo.lastIndexOf("}")))];
@@ -122,7 +127,8 @@ public class RankCars {
 							for(int l = 0; l < showcase[k].length; l++)
 								showcase[k][l] = showcase[k - 1][l];
 						showcase[j][0] = "" + (i + 1);
-						showcase[j][1] = carsInfo.substring((index = (index = carsInfo.indexOf("carID\":" + showcase[j][0])) + carsInfo.substring(index).indexOf("name") + 7), index + carsInfo.substring(index).indexOf("\""));
+						showcase[j][1] = carsInfo.substring((index = (index = carsInfo.indexOf("carID\":" + showcase[j][0])) + carsInfo.substring(index).indexOf("name") + 7), 
+								index + carsInfo.substring(index).indexOf("\""));
 						for(int m = 0; m < showcase[j][1].length(); m++)
 							if(showcase[j][1].charAt(m) == '\\' && showcase[j][1].charAt(m + 1) == 'u')
 								showcase[j][1] = showcase[j][1].substring(0, m) + (char)(Integer.parseInt(showcase[j][1].substring(m + 2, m + 6), 16)) + showcase[j][1].substring(m + 6);
@@ -133,11 +139,20 @@ public class RankCars {
 					}
 			}
 		}
-		String results = "\n__**" + displayName + "**__: " + url;
+		String team = racerInfo.substring(index = racerInfo.indexOf("tag") + 5, index + racerInfo.substring(index).indexOf(","));
+		if(team.contains("\""))
+			displayName = "[" + team.substring(1, team.length() - 1) + "]" + displayName;
+		EmbedBuilder embed = new EmbedBuilder()
+				.setAuthor(displayName, url, "")
+				.setColor(Color.PINK)
+				.setTitle("__**Cars Owned by Rank**__");
+		
 		for(int i = 0; i < showcase.length; i++)
 			if(showcase[i][1] != null)
-				results += "\n" + (i + 1) + ". **" + showcase[i][1] + "**: " + Evaluate.moneyToText(Integer.parseInt(showcase[i][4])) + "	__Sell Price__: " + Evaluate.moneyToText(Integer.parseInt(showcase[i][2]));
-		return results; 
+				embed.addInlineField(i + 1 + ". " + showcase[i][1], "**Value** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][4])) 
+						+ "\n**Sell Price** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][2])));
+		return embed;
+
 	}
 
 }
