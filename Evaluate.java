@@ -14,9 +14,17 @@ public class Evaluate {
 		long bonus = 0;
 		String url = "";
 		if(arg.indexOf(" ") != -1) {
-			url = "https://www.nitrotype.com/racer/" + arg.substring(0, arg.indexOf(" "));
-			bonus = Long.parseLong(arg.substring(arg.indexOf(" ") + 1));
-		} else url = "https://www.nitrotype.com/racer/" + arg;
+			if(arg.contains("https://www.nitrotype.com/racer/"))
+				url = arg.substring(0, arg.indexOf(" "));
+			else url = "https://www.nitrotype.com/racer/" + arg.substring(0, arg.indexOf(" "));
+			if(arg.substring(arg.indexOf(" ") + 1).contains("."))
+				bonus = (long)(Double.parseDouble(arg.substring(arg.indexOf(" ") + 1)) + 0.5);
+			else bonus = Long.parseLong(arg.substring(arg.indexOf(" ") + 1));
+		} else {
+			if(arg.contains("https://www.nitrotype.com/racer/"))
+				url = arg;
+			else url = "https://www.nitrotype.com/racer/" + arg;
+		}
 		
 		System.setProperty("http.agent", "Chrome");
 		URL u = new URL(url);

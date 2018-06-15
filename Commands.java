@@ -28,18 +28,32 @@ public class Commands implements MessageCreateListener {
 			return;
 		}
 		//If the message starts with an "l."
-		if(e.getMessage().getContent().startsWith("l.") || e.getMessage().getContent().startsWith("L.")) {
+		if(e.getMessage().getContent().toLowerCase().startsWith("l.")) {
+			if(!(e.getMessage().getContent().length() > 2)) {
+				//Send a message to the requester stating the command was not recognized
+				e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "Empty command.\nUse `l.help` for a list of commands."));
+				//Print a log to the console declaring the command error
+				System.out.println("Empty command error announced.");
+				return;
+			}
 			//And if the character after "l." isn't a space
 			if(!Character.toString(e.getMessage().getContent().charAt(2)).equals(" ")) {	
 				//Check if the message contains a command
 				boolean found = false;
 				byte loc = 0;
 				for(int i = 0; i < Main.commands.length; i++) {
-					if(e.getMessage().getContent().length() >= Main.commands[i][0].length() && 
-							Main.commands[i][0].equalsIgnoreCase(e.getMessage().getContent().substring(0, Main.commands[i][0].length()))) {
-						found = true;
-						loc = (byte)i;
-						break;
+					//if the message is big enough to contain the command
+					if(e.getMessage().getContent().length() >= Main.commands[i][0].length() 
+							//And the initial string of characters matches a command
+							&& Main.commands[i][0].equalsIgnoreCase(e.getMessage().getContent().substring(0, Main.commands[i][0].length()))) {
+						if(e.getMessage().getContent().length() > Main.commands[i][0].length()
+								&& e.getMessage().getContent().charAt(Main.commands[i][0].length()) != ' '); 
+						else {
+							found = true;
+							loc = (byte)i;
+							Main.addCounter(i);
+							break;
+						}
 					}
 				}
 				//Get the current date and time
@@ -55,7 +69,8 @@ public class Commands implements MessageCreateListener {
 						//Organize a list of the current commands
 						EmbedBuilder embed = new EmbedBuilder().setTitle("List of Commands")
 								.setAuthor("Loly Dealer", null, "https://cdn.discordapp.com/avatars/455132593642536983/6bb82ec527d846631f9b511ec510bc4b.png")
-								.setColor(Color.PINK).setFooter("Developed by Nes370");
+								.setColor(Color.PINK).setFooter("Developed by Nes370")
+								.setThumbnail(new File("C:/Users/Rie_f/eclipse-workspace/lolydealer/src/main/resources/Loly Dealer.jpg"));
 						for(int i = 0; i < Main.commands.length; i++)
 							embed.addField(Main.commands[i][0], Main.commands[i][1]);
 						//And send a message to the requester with that list. 
@@ -67,7 +82,14 @@ public class Commands implements MessageCreateListener {
 					else if(Main.commands[loc][0].equalsIgnoreCase("l.value")) {
 						//And the message only included "l.value"
 						String arg = "";
-						if(e.getMessage().getContent().equalsIgnoreCase("l.value")) {
+						if(e.getMessage().getContent().length() < 9) {
+							if(!e.getMessage().getContent().equalsIgnoreCase("l.value")) {
+								//Send a message to the requester stating the command was not recognized
+								e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "Unknown command.\nUse `l.help` for a list of commands."));
+								//Print a log to the console declaring the command error
+								System.out.println("Command error announced.");
+								return;
+							}
 							//If the requester is registered to a NT account
 							if(isRegistered(e.getMessage().getAuthor().getId() + "")) {
 								//Set the [username] value equal to their registered NT account
@@ -164,7 +186,14 @@ public class Commands implements MessageCreateListener {
 					else if(Main.commands[loc][0].equalsIgnoreCase("l.cars")) {
 						//And the message contains only "l.cars"
 						String arg = "";
-						if(e.getMessage().getContent().equalsIgnoreCase("l.cars")) {
+						if(e.getMessage().getContent().length() < 8) {
+							if(!e.getMessage().getContent().equalsIgnoreCase("l.cars")) {
+								//Send a message to the requester stating the command was not recognized
+								e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "Unknown command.\nUse `l.help` for a list of commands."));
+								//Print a log to the console declaring the command error
+								System.out.println("Command error announced.");
+								return;
+							}
 							//If the author is registered
 							if(isRegistered((e.getMessage().getAuthor() + "").substring((e.getMessage().getAuthor() + "").indexOf("id") + 4, 
 									(e.getMessage().getAuthor() + "").indexOf(",")))) {//If the author is registered
@@ -302,13 +331,44 @@ public class Commands implements MessageCreateListener {
 					//Else if the command is info
 					else if(Main.commands[loc][0].equalsIgnoreCase("l.info")) {
 						//Send a message to the requester about the bot
+						long currentTime = System.currentTimeMillis();
+						long runtime = currentTime - Main.getLoginStamp();
+						long days = runtime / 86400000, hours = runtime % 86400000 / 3600000, minutes = runtime % 86400000 % 3600000 / 60000, seconds = runtime % 86400000 % 3600000 % 60000 / 1000;
+						String dayStr, hourStr, minuteStr, secondStr;
+						if(days == 0)
+							dayStr = "";
+						else if(days == 1)
+							dayStr = "1 day ";
+						else dayStr = days + " days ";
+						if(hours == 0)
+							hourStr = "";
+						else if(hours == 1)
+							hourStr = "1 hour ";
+						else hourStr = hours + " hours ";
+						if(minutes == 0)
+							minuteStr = "";
+						else if(minutes == 1)
+							minuteStr = "1 minute ";
+						else minuteStr = minutes + " minutes ";
+						if(seconds == 0)
+							secondStr = "";
+						else if(seconds == 1)
+							secondStr = "1 second ";
+						else secondStr = seconds + " seconds ";
+						int[] counter = Main.getCounter();
+						String commandStr = "";
+						for(int i = 0; i < counter.length; i++)
+							if(counter[i] != 0)
+								commandStr += "**" + Main.commands[i][0].substring(2) + "**: " + counter[i] + "\n";
+						
 						e.getMessage().getChannel().sendMessage(new EmbedBuilder().setTitle("Loly Dealer").setDescription("A Discord bot for Nitro Type users.")
-								.setAuthor("About", "https://discordapp.com/users/" + Main.getBotID().substring(2, Main.getBotID().length() - 1), "")
+								.setAuthor("About", "https://discordapp.com/users/" + Main.getBotID().substring(2, Main.getBotID().length() - 1), "https://cdn.discordapp.com/avatars/237676240931258378/e3fafdd9e33b147d87b3460b136e1ae2.png")
+								.setThumbnail(new File("C:/Users/Rie_f/eclipse-workspace/lolydealer/src/main/resources/Nes.png"))
 								.addField("https://github.com/Nes370/lolydealer", "Loly Dealer is made by Nes370. She is written in Java and uses BtoBastian's Javacord library.")
 								.addField("https://discordapp.com/users/" + Main.getDeveloperID().substring(3, Main.getDeveloperID().length() - 1), 
 										"If you wish to add her to a server, please contact me using the link above.").setColor(Color.PINK)
-								.setFooter("Developed by Nes370"));
-								//.setThumbnail(new File("https://cdn.discordapp.com/avatars/237676240931258378/e3fafdd9e33b147d87b3460b136e1ae2.png")));
+								.addInlineField("Runtime", "" +  dayStr + hourStr + minuteStr + secondStr)
+								.addInlineField("Commands", commandStr).setFooter("Developed by Nes370"));
 						
 						//Print a log to the console declaring the information was sent
 						System.out.println("Bot information sent.");
@@ -320,6 +380,11 @@ public class Commands implements MessageCreateListener {
 					//Print a log to the console declaring the command error
 					System.out.println("Command error announced.");
 				}
+			} else {
+				//Send a message to the requester stating the command was not recognized
+				e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "Unknown command.\nUse `l.help` for a list of commands."));
+				//Print a log to the console declaring the command error
+				System.out.println("Command error announced.");
 			}
 		}
 	}

@@ -3,6 +3,10 @@ package com.github.nes370.lolydealer;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
@@ -21,13 +25,18 @@ public class Main {
 			//L.team [Account/Team]
 			{"L.info", "Learn about this bot."}
 	};
+	private static int[] counter = new int[commands.length];
 	private static String token, developerID, botID;
+	private static long loginStamp;
 	public static void main(String[] args) {
 		setToken();
 		setDeveloperID();
 		setBotID();
 		DiscordApi api = new DiscordApiBuilder().setToken(getToken()).login().join();
-		System.out.println("Logged in!");
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		//LocalDateTime now = LocalDateTime.now();
+		LocalDateTime loginDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(loginStamp = System.currentTimeMillis()), ZoneId.systemDefault());
+		System.out.println("Logged in at " + dtf.format(loginDateTime) + ".");
 		api.updateActivity("with Lolis", ActivityType.PLAYING);
 		api.updateStatus(UserStatus.IDLE);
 		api.addMessageCreateListener(new Commands());
@@ -76,5 +85,21 @@ public class Main {
 			System.out.println("An error occured when attempting to read from Bot.txt");
 		}
 		return;
+	}
+
+	public static long getLoginStamp() {
+		return loginStamp;
+	}
+
+	public static void setLoginStamp(long loginStamp) {
+		Main.loginStamp = loginStamp;
+	}
+
+	public static int[] getCounter() {
+		return counter;
+	}
+
+	public static void addCounter(int index) {
+		Main.counter[index] += 1;
 	}
 }

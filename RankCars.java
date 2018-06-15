@@ -14,11 +14,19 @@ public class RankCars {
 		int displayCars = 10;
 		String url = "";
 		if(arg.indexOf(" ") != -1) {
-			url = "https://www.nitrotype.com/racer/" + arg.substring(0, arg.indexOf(" "));
-			displayCars = Integer.parseInt(arg.substring(arg.indexOf(" ") + 1));
-		} else url = "https://www.nitrotype.com/racer/" + arg;
-		if(displayCars > 30)
-			displayCars = 30;
+			if(arg.contains("https://www.nitrotype.com/racer/"))
+				url = arg.substring(0, arg.indexOf(" "));
+			else url = "https://www.nitrotype.com/racer/" + arg.substring(0, arg.indexOf(" "));
+			if(arg.substring(arg.indexOf(" ") + 1).contains("."))
+				displayCars = (int)(Double.parseDouble(arg.substring(arg.indexOf(" ") + 1)) + 0.5);
+			else displayCars = Integer.parseInt(arg.substring(arg.indexOf(" ") + 1));
+		} else {
+			if(arg.contains("https://www.nitrotype.com/racer/"))
+				url = arg;
+			else url = "https://www.nitrotype.com/racer/" + arg;
+		}
+		if(displayCars > 25)
+			displayCars = 25;
 		
 		System.setProperty("http.agent", "Chrome");
 		URL u = new URL(url);
