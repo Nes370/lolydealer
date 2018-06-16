@@ -9,22 +9,39 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 public class RankCars {
 	
-	public static EmbedBuilder main(String arg) throws Exception {
+	public static EmbedBuilder main(String arg, int greg) throws Exception {
 		
 		int displayCars = 10;
 		String url = "";
+		int index = 0;
+		//removes leading spaces
+		while(arg.substring(index).startsWith(" ")) {index++;} arg = arg.substring(index);
+		//confirms 3rd argument
 		if(arg.indexOf(" ") != -1) {
-			if(arg.contains("https://www.nitrotype.com/racer/"))
+			if(arg.startsWith("https://www.nitrotype.com/racer/"))
 				url = arg.substring(0, arg.indexOf(" "));
-			else url = "https://www.nitrotype.com/racer/" + arg.substring(0, arg.indexOf(" "));
-			if(arg.substring(arg.indexOf(" ") + 1).contains("."))
-				displayCars = (int)(Double.parseDouble(arg.substring(arg.indexOf(" ") + 1)) + 0.5);
-			else displayCars = Integer.parseInt(arg.substring(arg.indexOf(" ") + 1));
+			else if(arg.startsWith("www.nitrotype.com/racer/"))
+				url = "https://" + arg.substring(0, arg.indexOf(" "));
+			else 
+				url = "https://www.nitrotype.com/racer/" + arg.substring(0, arg.indexOf(" "));
+				
+			index = 0;
+			arg = arg.substring(arg.indexOf(" "));
+			//remove leading spaces
+			while(arg.substring(index).startsWith(" ")) {index++;} arg = arg.substring(index);
+			
+			if(arg.contains("."))
+				displayCars = (int)(Double.parseDouble(arg) + 0.5);
+			else
+				displayCars = Integer.parseInt(arg);
 		} else {
-			if(arg.contains("https://www.nitrotype.com/racer/"))
+			if(arg.startsWith("https://www.nitrotype.com/racer/"))
 				url = arg;
+			else if(arg.startsWith("www.nitrotype.com/racer/"))
+				url = "https://" + arg;
 			else url = "https://www.nitrotype.com/racer/" + arg;
 		}
+		
 		if(displayCars > 25)
 			displayCars = 25;
 		
@@ -40,7 +57,11 @@ public class RankCars {
 				break;
 		s.close();
 		
-		int index = 0;
+		boolean gold = false;
+		if(racerInfo.substring((index = racerInfo.indexOf("membership") + 13), index + racerInfo.substring(index).indexOf("\"")).equals("gold"))			
+			gold = true;
+		
+		index = 0;
 		String displayName = racerInfo.substring((index = racerInfo.indexOf("displayName") + 14), index + racerInfo.substring(index).indexOf("\""));
 		if(displayName.equals("") || displayName.equals("ull,"))
 			displayName = racerInfo.substring((index = racerInfo.indexOf("username") + 11), index + racerInfo.substring(index).indexOf("\""));
@@ -79,7 +100,7 @@ public class RankCars {
 			index += racerInfo.substring(index).indexOf('[') + 1;
 		}
 		
-		String[][] showcase = new String[displayCars][5];	
+		String[][] showcase = new String[displayCars][6];	
 		//showcase[x][0] = "carId", showcase[x][1] = "carName", showcase [x][2] = "carLiquid", showcase [x][3] = "carSubjective", showcase [x][4] = "carTotal"
 		long lastDate = 0;
 		int tempLiq, tempSub, tempTot;
@@ -125,26 +146,52 @@ public class RankCars {
 			else if(i == 153 || i == 154)	//2018 PAC Event
 				lastDate = 1526601600;
 			else lastDate = System.currentTimeMillis() / 1000;
-			if(cars[i] == 1) {	//Car is owned
-				tempLiq += carValues[i] * 0.6;
-				tempSub += carValues[i] * 0.4 * Math.pow(2.0, (System.currentTimeMillis() / 1000 - lastDate) / 31536000.0);
-				tempTot = tempLiq + tempSub;
-				for(int j = 0; j < showcase.length; j++)
-					if(showcase[j][4] == null || Integer.parseInt(showcase[j][4]) < tempTot ) {
-						for(int k = showcase.length - 1; k > j; k--)
-							for(int l = 0; l < showcase[k].length; l++)
-								showcase[k][l] = showcase[k - 1][l];
-						showcase[j][0] = "" + (i + 1);
-						showcase[j][1] = carsInfo.substring((index = (index = carsInfo.indexOf("carID\":" + showcase[j][0])) + carsInfo.substring(index).indexOf("name") + 7), 
-								index + carsInfo.substring(index).indexOf("\""));
-						for(int m = 0; m < showcase[j][1].length(); m++)
-							if(showcase[j][1].charAt(m) == '\\' && showcase[j][1].charAt(m + 1) == 'u')
-								showcase[j][1] = showcase[j][1].substring(0, m) + (char)(Integer.parseInt(showcase[j][1].substring(m + 2, m + 6), 16)) + showcase[j][1].substring(m + 6);
-						showcase[j][2] = "" + tempLiq;
-						showcase[j][3] = "" + tempSub;	
-						showcase[j][4] = "" + tempTot;
-						break;
-					}
+			if(greg == 0) {
+				if(cars[i] == 1) {	//Car is owned
+					tempLiq += carValues[i] * 0.6;
+					tempSub += carValues[i] * 0.4 * Math.pow(2.0, (System.currentTimeMillis() / 1000 - lastDate) / 31536000.0);
+					tempTot = tempLiq + tempSub;
+					for(int j = 0; j < showcase.length; j++)
+						if(showcase[j][4] == null || Integer.parseInt(showcase[j][4]) < tempTot ) {
+							for(int k = showcase.length - 1; k > j; k--)
+								for(int l = 0; l < showcase[k].length; l++)
+									showcase[k][l] = showcase[k - 1][l];
+							showcase[j][0] = "" + (i + 1);
+							showcase[j][1] = carsInfo.substring((index = (index = carsInfo.indexOf("carID\":" + showcase[j][0])) + carsInfo.substring(index).indexOf("name") + 7), 
+									index + carsInfo.substring(index).indexOf("\""));
+							for(int m = 0; m < showcase[j][1].length(); m++)
+								if(showcase[j][1].charAt(m) == '\\' && showcase[j][1].charAt(m + 1) == 'u')
+									showcase[j][1] = showcase[j][1].substring(0, m) + (char)(Integer.parseInt(showcase[j][1].substring(m + 2, m + 6), 16)) + showcase[j][1].substring(m + 6);
+							showcase[j][2] = "" + tempLiq;
+							showcase[j][3] = "" + tempSub;	
+							showcase[j][4] = "" + tempTot;
+							showcase[j][5] = "" + carValues[i];
+							break;
+						}
+				}
+			} else if(greg == 1){
+				if(cars[i] == 2) {	//Car is owned
+					tempLiq += carValues[i] * 0.6;
+					tempSub += carValues[i] * 0.4 * Math.pow(2.0, (System.currentTimeMillis() / 1000 - lastDate) / 31536000.0);
+					tempTot = tempLiq + tempSub;
+					for(int j = 0; j < showcase.length; j++)
+						if(showcase[j][4] == null || Integer.parseInt(showcase[j][4]) < tempTot ) {
+							for(int k = showcase.length - 1; k > j; k--)
+								for(int l = 0; l < showcase[k].length; l++)
+									showcase[k][l] = showcase[k - 1][l];
+							showcase[j][0] = "" + (i + 1);
+							showcase[j][1] = carsInfo.substring((index = (index = carsInfo.indexOf("carID\":" + showcase[j][0])) + carsInfo.substring(index).indexOf("name") + 7), 
+									index + carsInfo.substring(index).indexOf("\""));
+							for(int m = 0; m < showcase[j][1].length(); m++)
+								if(showcase[j][1].charAt(m) == '\\' && showcase[j][1].charAt(m + 1) == 'u')
+									showcase[j][1] = showcase[j][1].substring(0, m) + (char)(Integer.parseInt(showcase[j][1].substring(m + 2, m + 6), 16)) + showcase[j][1].substring(m + 6);
+							showcase[j][2] = "" + tempLiq;
+							showcase[j][3] = "" + tempSub;	
+							showcase[j][4] = "" + tempTot;
+							showcase[j][5] = "" + carValues[i];
+							break;
+						}
+				}
 			}
 		}
 		String team = racerInfo.substring(index = racerInfo.indexOf("tag") + 5, index + racerInfo.substring(index).indexOf(","));
@@ -152,13 +199,21 @@ public class RankCars {
 			displayName = "[" + team.substring(1, team.length() - 1) + "]" + displayName;
 		EmbedBuilder embed = new EmbedBuilder()
 				.setAuthor(displayName, url, "")
-				.setColor(Color.PINK)
-				.setTitle("__**Cars Owned by Rank**__");
+				.setColor(Color.PINK);
+		if(greg == 0)
+			embed.setTitle("__**Cars Owned by Rank**__");
+		else if(greg == 1)
+			embed.setTitle("__**Cars Sold by Rank**__");
+		if(gold)
+			embed.setColor(new Color(0xFFD700));
 		
 		for(int i = 0; i < showcase.length; i++)
-			if(showcase[i][1] != null)
+			if(greg == 0 && showcase[i][1] != null)
 				embed.addInlineField(i + 1 + ". " + showcase[i][1], "**Value** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][4])) 
 						+ "\n**Sell Price** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][2])));
+			else if(greg == 1 && showcase[i][1] != null)
+				embed.addInlineField(i + 1 + ". " + showcase[i][1], "**Value** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][4]))
+						+ "\n**Buy Price** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][5])));
 		return embed;
 
 	}

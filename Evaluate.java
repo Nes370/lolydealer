@@ -13,16 +13,31 @@ public class Evaluate {
 		
 		long bonus = 0;
 		String url = "";
+		int index = 0;
+		//removes leading spaces
+		while(arg.substring(index).startsWith(" ")) {index++;} arg = arg.substring(index);
+		//confirms 3rd argument
 		if(arg.indexOf(" ") != -1) {
-			if(arg.contains("https://www.nitrotype.com/racer/"))
+			//2nd argument is a url, use it for the url
+			if(arg.startsWith("https://www.nitrotype.com/racer/"))
 				url = arg.substring(0, arg.indexOf(" "));
-			else url = "https://www.nitrotype.com/racer/" + arg.substring(0, arg.indexOf(" "));
-			if(arg.substring(arg.indexOf(" ") + 1).contains("."))
-				bonus = (long)(Double.parseDouble(arg.substring(arg.indexOf(" ") + 1)) + 0.5);
-			else bonus = Long.parseLong(arg.substring(arg.indexOf(" ") + 1));
+			else if(arg.startsWith("www.nitrotype.com/racer/"))
+				url = "https://" + arg.substring(0, arg.indexOf(" "));
+			else 
+				url = "https://www.nitrotype.com/racer/" + arg.substring(0, arg.indexOf(" "));
+			
+			index = 0;
+			arg = arg.substring(arg.indexOf(" "));
+			//remove leading spaces
+			while(arg.substring(index).startsWith(" ")) {index++;} arg = arg.substring(index);
+			if(arg.contains("."))
+				bonus = (long)(Double.parseDouble(arg) + 0.5);
+			else bonus = Long.parseLong(arg);
 		} else {
-			if(arg.contains("https://www.nitrotype.com/racer/"))
+			if(arg.startsWith("https://www.nitrotype.com/racer/"))
 				url = arg;
+			else if(arg.startsWith("www.nitrotype.com/racer/"))
+				url = "https://" + arg;
 			else url = "https://www.nitrotype.com/racer/" + arg;
 		}
 		
@@ -38,14 +53,14 @@ public class Evaluate {
 				break;
 		s.close();
 		
-		int index, gold = 0;
+		int gold = 0;
 		if(racerInfo.substring((index = racerInfo.indexOf("membership") + 13), index + racerInfo.substring(index).indexOf("\"")).equals("gold"))			
 			gold = 1;
 		
 		String team = racerInfo.substring(index = racerInfo.indexOf("tag") + 5, index + racerInfo.substring(index).indexOf(","));
 		
-		String displayName = racerInfo.substring((index = racerInfo.indexOf("displayName") + 14), index + racerInfo.substring(index).indexOf("\""));
-		if(displayName.equals("") || displayName.equals("ull,"))
+		String displayName = racerInfo.substring((index = racerInfo.indexOf("displayName") + 14), index + racerInfo.substring(index).indexOf(",") - 1);
+		if(displayName.equals("") || displayName.equals("ul"))
 			displayName = racerInfo.substring((index = racerInfo.indexOf("username") + 11), index + racerInfo.substring(index).indexOf("\""));
 		for(int i = 0; i < displayName.length(); i++)
 			if(displayName.charAt(i) == '\\' && displayName.charAt(i+1) == 'u')
@@ -159,9 +174,10 @@ public class Evaluate {
 				.addInlineField("Cash", fractionToText(money, liquid))
 				.addInlineField("Nitros", fractionToText(nitros * 500, liquid))
 				.addInlineField("Cars", fractionToText(liquidCars, liquid))
-				.addField("__**Subjective Value**__:", moneyToText(subjective))
-				.addInlineField("Gold", fractionToText(gold * 10000000, subjective))
-				.addInlineField("Age", fractionToText(Math.pow(2.0, age) * 50000, subjective))
+				.addField("__**Subjective Value**__:", moneyToText(subjective));
+		if(gold != 0)
+			embed.addInlineField("Gold", fractionToText(gold * 10000000, subjective)).setColor(new Color(0xFFD700));
+		embed.addInlineField("Age", fractionToText(Math.pow(2.0, age) * 50000, subjective))
 				.addInlineField("Experience", fractionToText(experience, subjective))
 				.addInlineField("Races", fractionToText(races * 1000, subjective))
 				.addInlineField("Longest Session", fractionToText(session * 2000, subjective))
