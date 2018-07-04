@@ -48,6 +48,16 @@ public class Commands implements MessageCreateListener {
 		
 		//If the message starts with an "l."
 		if(e.getMessage().getContent().toLowerCase().startsWith("l.")) {
+			
+			//Get the current date and time
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+			LocalDateTime now = LocalDateTime.now();
+			//Print a log to the console that includes who sent what command in which channel of which server at what date and time.
+			System.out.println("At " + dtf.format(now) + ", " + e.getMessage().getAuthor() + " used \"" + e.getMessage().getContent() + "\" in " + e.getMessage().getServer() + ", " + e.getMessage().getChannel() + ".");
+			if(Main.isLogging())
+					new MessageBuilder().append("At " + dtf.format(now) + ", " + sendmsg(e.getMessage().getAuthor().getId(), "") + " used \"" + e.getMessage().getContent() + "\" in <#" + e.getMessage().getChannel().getId() + ">.")
+							.send(Main.getDeveloperChannel());
+			
 			//If the message isn't bigger than two characters
 			if(!(e.getMessage().getContent().length() > 2)) {
 				//Send an error message to the requester stating the command was not recognized
@@ -57,6 +67,7 @@ public class Commands implements MessageCreateListener {
 				System.out.println(Main.errors[0][0] + " error announced.");
 				return;
 			}
+			
 			//And if the character after "l." isn't a space
 			if(!Character.toString(e.getMessage().getContent().charAt(2)).equals(" ")) {	
 				boolean found = false;
@@ -68,8 +79,7 @@ public class Commands implements MessageCreateListener {
 							//And the initial string of characters matches a command
 							Main.commands[i][0].equalsIgnoreCase(e.getMessage().getContent().substring(0, Main.commands[i][0].length()))) {
 						//If the message is larger than the command and the character after the command isn't a space
-						if(e.getMessage().getContent().length() > Main.commands[i][0].length()
-								&& e.getMessage().getContent().charAt(Main.commands[i][0].length()) != ' ')
+						if(e.getMessage().getContent().length() > Main.commands[i][0].length()&& e.getMessage().getContent().charAt(Main.commands[i][0].length()) != ' ')
 							/*Do nothing*/;
 						else {
 							found = true;
@@ -79,14 +89,6 @@ public class Commands implements MessageCreateListener {
 						}
 					}
 				}
-				//Get the current date and time
-				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-				LocalDateTime now = LocalDateTime.now();
-				//Print a log to the console that includes who sent what command in which channel of which server at what date and time.
-				System.out.println("At " + dtf.format(now) + ", " + e.getMessage().getAuthor() + " used \"" + e.getMessage().getContent() + "\" in " + e.getMessage().getServer() + ", " + e.getMessage().getChannel() + ".");
-				if(Main.isLogging())
-						new MessageBuilder().append("At " + dtf.format(now) + ", " + sendmsg(e.getMessage().getAuthor().getId(), "") + " used \"" + e.getMessage().getContent() + "\" in <#" + e.getMessage().getChannel().getId() + ">.").send(Main.getDeveloperChannel());
-				//e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "Unknown command.\nUse `l.help` for a list of commands."));
 				
 				//If a command was found in the message
 				if(found) {
@@ -96,47 +98,43 @@ public class Commands implements MessageCreateListener {
 						//Organize a list of the current commands
 						EmbedBuilder embed = new EmbedBuilder().setTitle("List of Commands")
 								.setAuthor("Loly Dealer", null, "https://cdn.discordapp.com/avatars/455132593642536983/6bb82ec527d846631f9b511ec510bc4b.png")
-								.setColor(Color.PINK).setFooter("Developed by Nes370")
-								//Adding images can make an embed lag for long periods of time, not recommended
-								//.setThumbnail(new File("C:/Users/Rie_f/eclipse-workspace/lolydealer/src/main/resources/Loly Dealer.jpg"))
-								;
+								.setColor(Color.PINK).setFooter("Developed by Nes370");
 						for(int i = 0; i < Main.commands.length; i++)
 							embed.addField(Main.commands[i][0], Main.commands[i][1]);
 						//And send a message to the requester with that list. 
 						e.getMessage().getChannel().sendMessage(embed);
 						//Print a log to the console to declare the command's request.
 						System.out.println("Help message printed.");
+						return;
 					}
 					
 					//Else if the command was value
 					else if(Main.commands[loc][0].equalsIgnoreCase("l.value")) {
-						//And the message only included "l.value"
 						String arg = "";
+						//If the command was minimal in length
 						if(e.getMessage().getContent().length() < 9) {
+							//And the message only included "l.value"
 							if(!e.getMessage().getContent().equalsIgnoreCase("l.value")) {
-								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(Main.errors[1] + ".\nUse `l.help` for a list of commands.").setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
-								Main.addECounter(1);
-								System.out.println(Main.errors[1][0] + " error announced.");
 								//Send a message to the requester stating the command was not recognized
-								//e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "Unknown command.\nUse `l.help` for a list of commands."));
+								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(Main.errors[1] + ".\nUse `l.help` for a list of commands.")
+										.setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
+								//Add a count to the Error counter
+								Main.addECounter(1);
 								//Print a log to the console declaring the command error
-								//System.out.println("Command error announced.");
+								System.out.println(Main.errors[1][0] + " error announced.");
 								return;
 							}
 							//If the requester is registered to a NT account
 							if(isRegistered(e.getMessage().getAuthor().getIdAsString())) {
-								//Set the [username] value equal to their registered NT account
-								arg = linkedAccount(e.getMessage().getAuthor().getIdAsString())
-										//(e.getMessage().getAuthor() + "").substring((e.getMessage().getAuthor() + "").indexOf("id") + 4, (e.getMessage().getAuthor() + "").indexOf(",")))
-										;
+								//Set the username parameter to their registered NT account
+								arg = linkedAccount(e.getMessage().getAuthor().getIdAsString());
 								//Print a log to the console declaring the change in the command arguments
 								System.out.println("Adjusted to \"l.value " + arg + "\"");
 							//If the requester is not registered
 							} else {
 								//Send a message to the requester that asks them to register to their NT account
-								e.getMessage().getChannel().sendMessage(
-										new EmbedBuilder().setDescription(
-										"A registered account was not found.\nPlease register with `l.register [username]`").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A registered account was not found.\nPlease register with `l.register [username]`")
+										.setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
 								//Print a log to the console to declare the lack of a registered account
 								System.out.println("Account not found.");
 								//And end the message reaction
@@ -147,56 +145,48 @@ public class Commands implements MessageCreateListener {
 							//If the @mention includes a "!"
 							if(e.getMessage().getContent().contains("<@!")) {
 								//And the Discord ID in the @mention is registered to a NT account
-								if(isRegistered(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, 
-										e.getMessage().getContent().indexOf(">")))) {
+								if(isRegistered(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, e.getMessage().getContent().indexOf(">")))) {
 									//If the command contains more text after the @mention
 									if(e.getMessage().getContent().length() > e.getMessage().getContent().indexOf(">") + 1) {
 										//Set the string argument to the linked account
-										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, 
-												e.getMessage().getContent().indexOf(">"))) 
-												+ e.getMessage().getContent().substring(e.getMessage().getContent().indexOf(">") + 1);
+										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, e.getMessage().getContent().indexOf(">"))) + e.getMessage().getContent()
+												.substring(e.getMessage().getContent().indexOf(">") + 1);
 										//Print a log to the console declaring the change in command arguments
 										System.out.println("Adjusted to \"l.value " + arg + "\"");
 									//Else the command only contains the @mention
 									} else {
 										//Set the string argument to the linked account
-										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3,
-												e.getMessage().getContent().indexOf(">")));
+										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, e.getMessage().getContent().indexOf(">")));
 										//Print a log to the console declaring the change in command arguments
 										System.out.println("Adjusted to \"l.value " + arg + "\"");
 									}
-								} else { //sendmsg(e.getMessage().getAuthor().getId(), 
-									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(
-										"A linked Nitro Type account could not be found for the Discord user " 
-										+ e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@"),
-										e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()))
-									;
+								} else {
+									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A linked Nitro Type account could not be found for the Discord user " + e.getMessage().getContent()
+											.substring(e.getMessage().getContent().indexOf("<@"), e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+									System.out.println("Account not found.");
 									return;
 								}
 							//And if it doesn't include a "!"
 							} else {
 								//And the Discord ID in the @mention is registered to a NT account
-								if(isRegistered(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, 
-										e.getMessage().getContent().indexOf(">")))) {
+								if(isRegistered(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, e.getMessage().getContent().indexOf(">")))) {
 									//If the command contains more text after the @mention
 									if(e.getMessage().getContent().length() > e.getMessage().getContent().indexOf(">") + 1) {
 										//Set the string argument to the linked account
-										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, 
-												e.getMessage().getContent().indexOf(">"))) 
-												+ e.getMessage().getContent().substring(e.getMessage().getContent().indexOf(">") + 1);
+										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, e.getMessage().getContent().indexOf(">"))) + e.getMessage().getContent()
+												.substring(e.getMessage().getContent().indexOf(">") + 1);
 										//Print a log to the console declaring the change in command arguments
 										System.out.println("Adjusted to \"l.value " + arg + "\"");
 									} else {
 										//Set the string argument to the linked account
-										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, 
-												e.getMessage().getContent().indexOf(">")));
+										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, e.getMessage().getContent().indexOf(">")));
 										//Print a log to the console declaring the change in command arguments
 										System.out.println("Adjusted to \"l.value " + arg + "\"");
 									}
-								} else { e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(//sendmsg(e.getMessage().getAuthor().getId(), 
-										"A linked Nitro Type account could not be found for the Discord user " 
-										+ e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@"), 
-										e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+								} else {
+									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A linked Nitro Type account could not be found for the Discord user " + e.getMessage().getContent()
+											.substring(e.getMessage().getContent().indexOf("<@"), e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+									System.out.println("Account not found.");
 									return;
 								}
 							}
@@ -213,14 +203,117 @@ public class Commands implements MessageCreateListener {
 							//Print a log to the console that shows where in the code the error occurred
 							e1.printStackTrace();
 							//Send a message to the requester declaring the error
-							e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(//sendmsg(e.getMessage().getAuthor().getId(), 
-									"A " + Main.errors[2][0] + " error occurred.\nUse `l.help` for a list of commands.").setColor(Color.YELLOW).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
+							e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A " + Main.errors[2][0].toLowerCase() + " error occurred.\nUse `l.help` for a list of commands.").setColor(Color.RED)
+									.setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
 							//Print a log to the console to declare the requester was notified of the error
 							Main.addECounter(2);
 							System.out.println("Runtime error announced.");
 						}
 					}
 					
+					else if(Main.commands[loc][0].equalsIgnoreCase("l.compare")) { //TODO change to its own compare function
+						String arg1 = "", arg2 = "";
+						//TODO If the string has no spaces, it will certainly not have compatible arguments
+						//If the string is long enough to hold l.compare and one more character
+						if(e.getMessage().getContent().indexOf(' ') == -1) {
+							//And it doesn't match l.compare
+							if(!e.getMessage().getContent().substring(0, 9).equalsIgnoreCase("l.compare")) {
+								//Send a message to the requester stating the command was not recognized
+								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(Main.errors[1][0] + ".\nUse `l.help` for a list of commands.").setColor(Color.RED)
+										.setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
+								Main.addECounter(1);
+								//Print a log to the console declaring the command error
+								System.out.println(Main.errors[1][0] + " error announced.");
+								return;
+							//Else it does match compare
+							} else {
+								//Send an error message stating the command needs an account to compare to
+								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(Main.errors[3][0] + ".\nEnsure that you include an account name or url to compare with.").setColor(Color.RED)
+										.setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
+								Main.addECounter(3);
+								//Print a log to the console declaring the command error
+								System.out.println(Main.errors[3][0] + " error announced.");
+								return;
+							}
+						}
+						//TODO If the string has only one space, it is either invalid, or it has one implicit argument
+						//if the string contains one space only, meaning there's only one argument
+						else if(e.getMessage().getContent().indexOf(' ') == e.getMessage().getContent().lastIndexOf(' ')) {
+							//If the requester is registered to a NT account, argument 1 is set
+							if(isRegistered(e.getMessage().getAuthor().getIdAsString())) {
+								//Set the [username] value equal to their registered NT account
+								arg1 = linkedAccount(e.getMessage().getAuthor().getIdAsString());
+								//Print a log to the console declaring the change in the command arguments
+								System.out.println("Adjusted to \"l.compare " + arg1 + " " + e.getMessage().getContent().substring(10) + "\"");
+							//If the requester is not registered, hold up
+							} else {
+								//Send a message to the requester that asks them to register to their NT account
+								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A registered account was not found for your Discord ID.\nPlease register with `l.register [username]`").setColor(Color.YELLOW)
+										.setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+								//Print a log to the console to declare the lack of a registered account
+								System.out.println("Account not found.");
+								//And end the message reaction
+								return;
+							}
+							//If the command includes an @mention for the second parameter
+							if(e.getMessage().getContent().contains("<@") && e.getMessage().getContent().contains(">"))	{
+								//If the @mention includes a "!"
+								if(e.getMessage().getContent().contains("<@!")) {
+									//And the Discord ID in the @mention is registered to a NT account
+									if(isRegistered(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, e.getMessage().getContent().indexOf(">")))) {
+										arg2 = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, e.getMessage().getContent().indexOf(">")));
+										System.out.println("Adjusted to \"l.compare " + arg1 + " " + arg2 + "\"");
+									//But if the Discord ID isn't linked to an account
+									} else {
+										//Send a message to the requester that asks them to use a valid argument to compare with
+										e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A linked Nitro Type account could not be found for the Discord user " + e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!"), e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+										//Print a log to the console to declare the lack of a registered account
+										System.out.println("Account not found.");
+										//And end the message reaction
+										return;
+									}
+								//And if it doesn't include a "!"
+								//And the Discord ID in the @mention is registered to a NT account
+								} else if(isRegistered(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, e.getMessage().getContent().indexOf(">")))) {
+									//Set the string argument to the linked account
+									arg2 = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, e.getMessage().getContent().indexOf(">")));
+									//Print a log to the console declaring the change in command arguments
+									System.out.println("Adjusted to \"l.compare " + arg1 + " " + arg2 + "\"");
+								} else {
+									//Send a message to the requester that tells them to use a valid argument to compare with
+									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A linked Nitro Type account could not be found for the Discord user " + e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@"), e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+									//Print a log to the console to declare the lack of a registered account
+									System.out.println("Account not found.");
+									//And end the message reaction
+									return;
+								}
+							}
+							//Else set the account argument to what is written in plain text
+							else arg2 = e.getMessage().getContent().substring(10);
+							
+							//Attempt to compare the accounts specified by arg1 and arg2
+							try {
+								e.getMessage().getChannel().sendMessage(Evaluate.main(arg1, arg2).setFooter("Results for " + e.getMessage().getAuthor().getDisplayName()));
+								//Print a log to the console to declare a successful comparison
+								System.out.println("Accounts compared.");
+							//If an error is caught
+							} catch (Exception e1) {
+								//Print a log to the console that shows where in the code the error occurred
+								e1.printStackTrace();
+								//Send a message to the requester declaring the error
+								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A " + Main.errors[2][0].toLowerCase() + " error occurred.\nUse `l.help` for a list of commands.").setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
+								//Add a count to the appropriate error counter
+								Main.addECounter(2);
+								//Print a log to the console to declare the requester was notified of the error
+								System.out.println("Runtime error announced.");
+								return;
+							}
+						}
+						//TODO If the command has multiple spaces, remove excess spaces, then check if there are too many arguments, if there are two arguments, or if there is one argument
+						else {
+							
+						}
+					}
 					//Else if the command is cars
 					else if(Main.commands[loc][0].equalsIgnoreCase("l.cars")) {
 						//And the message contains only "l.cars"
@@ -235,24 +328,15 @@ public class Commands implements MessageCreateListener {
 								return;
 							}
 							//If the author is registered
-							if(isRegistered(e.getMessage().getAuthor().getIdAsString()
-									//(e.getMessage().getAuthor() + "").substring((e.getMessage().getAuthor() + "").indexOf("id") + 4, (e.getMessage().getAuthor() + "").indexOf(",")))
-									)) {//If the author is registered
+							if(isRegistered(e.getMessage().getAuthor().getIdAsString())) {
 								//Set the account argument to the corresponding linked account
-								arg = linkedAccount(e.getMessage().getAuthor().getIdAsString()
-										//(e.getMessage().getAuthor() + "").substring((e.getMessage().getAuthor() + "").indexOf("id") + 4, (e.getMessage().getAuthor() + "").indexOf(","))
-										); //Set the string argument to the linked account
+								arg = linkedAccount(e.getMessage().getAuthor().getIdAsString());
 								//Print a log to the console declaring the change in command arguments
 								System.out.println("Adjusted to \"l.cars " + arg + "\"");
 							//If the author is not registered
 							} else { 
 								//Send the requester a message to register their NT account
-								//e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "A registered account was not found.\nPlease register with `l.register [username]`"));
-								//Print a log to the console to declare the lack of a registered account
-								//System.out.println("Account not found");
-								e.getMessage().getChannel().sendMessage(
-										new EmbedBuilder().setDescription(
-										"A registered account was not found.\nPlease register with `l.register [username OR url]`").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A registered account was not found.\nPlease register with `l.register [username OR url]`").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
 								//Print a log to the console to declare the lack of a registered account
 								System.out.println("Account not found.");
 								//End the message reaction
@@ -268,24 +352,18 @@ public class Commands implements MessageCreateListener {
 									//If the command contains more text after the @mention
 									if(e.getMessage().getContent().length() > e.getMessage().getContent().indexOf(">") + 1) {
 										//Set the account argument to its corresponding account
-										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, 
-												e.getMessage().getContent().indexOf(">"))) 
-												+ e.getMessage().getContent().substring(e.getMessage().getContent().indexOf(">") + 1);
+										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, e.getMessage().getContent().indexOf(">"))) + e.getMessage().getContent().substring(e.getMessage().getContent().indexOf(">") + 1);
 										//Print a log to the console declaring the change in command arguments 
 										System.out.println("Adjusted to \"l.cars " + arg + "\"");
 									//Else the command doesn't contain more text
 									} else {
 										//Set the account argument to its corresponding account
-										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, 
-												e.getMessage().getContent().indexOf(">")));
+										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, e.getMessage().getContent().indexOf(">")));
 										//Print a log to the console declaring the change in command arguments 
 										System.out.println("Adjusted to \"l.cars " + arg + "\"");
 									}
 								} else {
-									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(//sendmsg(e.getMessage().getAuthor().getId(), 
-										"A linked Nitro Type account could not be found for the Discord user " 
-										+ e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@"), 
-										e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status repoort for " + e.getMessage().getAuthor().getDisplayName()));
+									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A linked Nitro Type account could not be found for the Discord user " + e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@"), e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status repoort for " + e.getMessage().getAuthor().getDisplayName()));
 									return;
 								}
 							//Else if it does not contain an exclamation point
@@ -333,7 +411,7 @@ public class Commands implements MessageCreateListener {
 							//Print a log to the console to declare the requester was notified of the error
 							//System.out.println("Runtime error announced.");
 							e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(//sendmsg(e.getMessage().getAuthor().getId(), 
-									"A " + Main.errors[2][0] + " error occurred.\nUse `l.help` for a list of commands.").setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
+									"A " + Main.errors[2][0].toLowerCase() + " error occurred.\nUse `l.help` for a list of commands.").setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
 							//Print a log to the console to declare the requester was notified of the error
 							Main.addECounter(2);
 							System.out.println("Runtime error announced.");
@@ -341,39 +419,29 @@ public class Commands implements MessageCreateListener {
 					}
 					
 					//Else if the command equals l.soldcars
-					else if(Main.commands[loc][0].equalsIgnoreCase("l.soldcars")) {	//TODO Change to soldcars parameters
+					else if(Main.commands[loc][0].equalsIgnoreCase("l.soldcars")) {
 						//And the message contains only "l.cars"
 						String arg = "";
 						if(e.getMessage().getContent().length() < 12) {
 							if(!e.getMessage().getContent().equalsIgnoreCase("l.soldcars")) {
+								//Send a message to the requester stating the command was not recognized
 								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(Main.errors[1][0] + ".\nUse `l.help` for a list of commands.").setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
 								Main.addECounter(1);
-								System.out.println(Main.errors[1][0] + " error announced.");
-								//Send a message to the requester stating the command was not recognized
-								//e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "Unknown command.\nUse `l.help` for a list of commands."));
 								//Print a log to the console declaring the command error
-								//System.out.println("Command error announced.");
+								System.out.println(Main.errors[1][0] + " error announced.");
 								return;
 							}
 							//If the author is registered
-							if(isRegistered(e.getMessage().getAuthor().getIdAsString()
-									//(e.getMessage().getAuthor() + "").substring((e.getMessage().getAuthor() + "").indexOf("id") + 4, (e.getMessage().getAuthor() + "").indexOf(",")))
-									)) {//If the author is registered
+							if(isRegistered(e.getMessage().getAuthor().getIdAsString())) {
 								//Set the account argument to the corresponding linked account
-								arg = linkedAccount(e.getMessage().getAuthor().getIdAsString()
-										//(e.getMessage().getAuthor() + "").substring((e.getMessage().getAuthor() + "").indexOf("id") + 4, (e.getMessage().getAuthor() + "").indexOf(","))
-										); //Set the string argument to the linked account
+								arg = linkedAccount(e.getMessage().getAuthor().getIdAsString());
 								//Print a log to the console declaring the change in command arguments
 								System.out.println("Adjusted to \"l.soldcars " + arg + "\"");
 							//If the author is not registered
 							} else { 
 								//Send the requester a message to register their NT account
-								//e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "A registered account was not found.\nPlease register with `l.register [username]`"));
 								//Print a log to the console to declare the lack of a registered account
-								//System.out.println("Account not found");
-								e.getMessage().getChannel().sendMessage(
-										new EmbedBuilder().setDescription(
-										"A registered account was not found.\nPlease register with `l.register [username OR url]`").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+								e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A registered account was not found.\nPlease register with `l.register [username OR url]`").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
 								//Print a log to the console to declare the lack of a registered account
 								System.out.println("Account not found.");
 								//End the message reaction
@@ -397,16 +465,12 @@ public class Commands implements MessageCreateListener {
 									//Else the command doesn't contain more text
 									} else {
 										//Set the account argument to its corresponding account
-										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, 
-												e.getMessage().getContent().indexOf(">")));
+										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@!") + 3, e.getMessage().getContent().indexOf(">")));
 										//Print a log to the console declaring the change in command arguments 
 										System.out.println("Adjusted to \"l.cars " + arg + "\"");
 									}
 								} else {
-									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(//sendmsg(e.getMessage().getAuthor().getId(), 
-										"A linked Nitro Type account could not be found for the Discord user " 
-										+ e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@"), 
-										e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status repoort for " + e.getMessage().getAuthor().getDisplayName()));
+									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A linked Nitro Type account could not be found for the Discord user " + e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@"), e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status repoort for " + e.getMessage().getAuthor().getDisplayName()));
 									return;
 								}
 							//Else if it does not contain an exclamation point
@@ -417,24 +481,18 @@ public class Commands implements MessageCreateListener {
 									//If the command contains more text after the @mention
 									if(e.getMessage().getContent().length() > e.getMessage().getContent().indexOf(">") + 1) {
 										//Set the account argument to its corresponding account
-										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, 
-												e.getMessage().getContent().indexOf(">"))) 
-												+ e.getMessage().getContent().substring(e.getMessage().getContent().indexOf(">") + 1);
+										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, e.getMessage().getContent().indexOf(">"))) + e.getMessage().getContent().substring(e.getMessage().getContent().indexOf(">") + 1);
 										//Print a log to the console declaring the change in command arguments
 										System.out.println("Adjusted to \"l.cars " + arg + "\"");
 									//Else the command doesn't contain more text
 									} else {
 										//Set the account argument to its corresponding account
-										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, 
-												e.getMessage().getContent().indexOf(">")));
+										arg = linkedAccount(e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@") + 2, e.getMessage().getContent().indexOf(">")));
 										//Print a log to the console declaring the change in command arguments
 										System.out.println("Adjusted to \"l.cars " + arg + "\"");
 									}
 								} else { 
-									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(//sendmsg(e.getMessage().getAuthor().getId(), 
-										"A linked Nitro Type account could not be found for the Discord user " 
-										+ e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@"), 
-										e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
+									e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A linked Nitro Type account could not be found for the Discord user " + e.getMessage().getContent().substring(e.getMessage().getContent().indexOf("<@"), e.getMessage().getContent().indexOf(">") + 1) + ".").setColor(Color.YELLOW).setFooter("Status report for " + e.getMessage().getAuthor().getDisplayName()));
 									return;
 								}
 							}
@@ -450,16 +508,11 @@ public class Commands implements MessageCreateListener {
 							//Print a log to the console that shows where in the code the error occurred
 							e1.printStackTrace();
 							//Send a message to the requester declaring the error
-							//e.getMessage().getChannel().sendMessage(sendmsg(e.getMessage().getAuthor().getId(), "An error occurred.\nUse `l.help` for a list of commands."));
-							//Print a log to the console to declare the requester was notified of the error
-							//System.out.println("Runtime error announced.");
-							e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(//sendmsg(e.getMessage().getAuthor().getId(), 
-									"A " + Main.errors[2][0] + " error occurred.\nUse `l.help` for a list of commands.").setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
+							e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription("A " + Main.errors[2][0].toLowerCase() + " error occurred.\nUse `l.help` for a list of commands.").setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
 							//Print a log to the console to declare the requester was notified of the error
 							Main.addECounter(2);
 							System.out.println("Runtime error announced.");
-						}
-						
+						}						
 					}
 					
 					//Else if the command is register
@@ -507,8 +560,7 @@ public class Commands implements MessageCreateListener {
 							}
 								//Else send the requester a message to include an account parameter
 						} else {
-							e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(//sendmsg(e.getMessage().getAuthor().getId(), 
-								Main.errors[3][0] + ".\nEnsure that you include an account name or url to link that account. `l.register [username OR url]`").setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
+							e.getMessage().getChannel().sendMessage(new EmbedBuilder().setDescription(Main.errors[3][0] + ".\nEnsure that you include an account name or url to link that account. `l.register [username OR url]`").setColor(Color.RED).setFooter("Error message for " + e.getMessage().getAuthor().getDisplayName()));
 							Main.addECounter(3);
 							System.out.println(Main.errors[3][0] + " error announced.");
 							return;
@@ -583,7 +635,7 @@ public class Commands implements MessageCreateListener {
 								.setAuthor("About", "https://discord.gg/KNWzUPn", "https://cdn.discordapp.com/avatars/237676240931258378/e3fafdd9e33b147d87b3460b136e1ae2.png")
 								//.setThumbnail(new File("C:/Users/Rie_f/eclipse-workspace/lolydealer/src/main/resources/Nes.png"))
 								.addField("Creation", "Loly Dealer was created by Nes370. She is written in Java and uses [BtoBastian's Javacord library](https://github.com/BtoBastian/Javacord/tree/v_3). You can read her source code on [GitHub](https://github.com/Nes370/lolydealer)")
-								.addField("Contact", "If you wish to add her to a server, please contact me [here](https://discordapp.com/users/" + Main.getDeveloperID().substring(3, Main.getDeveloperID().length() - 1) + ").").setColor(Color.PINK)
+								.addField("Contact", "If you wish to add her to a server, please contact " + Main.getDeveloperID() + ".").setColor(Color.PINK)
 								.addInlineField("Runtime", "" +  dayStr + hourStr + minuteStr + secondStr)
 								.setFooter("Developed by Nes370");
 						if(commandStr.length() != 0)
@@ -615,7 +667,7 @@ public class Commands implements MessageCreateListener {
 				System.out.println(Main.errors[1][0] + " announced.");
 				return;
 			}
-		}
+		} //TODO l. error
 	}
 	
 

@@ -21,6 +21,7 @@ public class Main {
 			{"L.register", "Register an account to your Discord ID.\n`l.register [username OR url]`"},
 			{"L.unregister", "Remove a linked account from your Discord ID."},
 			{"L.value", "Evaluate an account.\n`l.value [username OR url OR @registeredDiscord] [bonus value]`"},
+			{"L.compare", "**Currently under development**\nCompare two accounts.\n`l.compare [username OR url OR @registeredDiscord] [username OR url OR @registeredDiscord]`"},
 			{"L.cars", "Rank an account's cars.\n`l.cars [username OR url OR @registeredDiscord] [number of cars]`"},
 			{"L.soldcars", "Rank an account's sold cars.\n`l.soldCars [username OR url OR @registeredDiscord] [number of cars]`"},
 			//TODO L.team [team tag OR username OR url OR @registeredDiscord]

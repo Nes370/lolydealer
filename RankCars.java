@@ -65,9 +65,16 @@ public class RankCars {
 		String displayName = racerInfo.substring((index = racerInfo.indexOf("displayName") + 14), index + racerInfo.substring(index).indexOf("\""));
 		if(displayName.equals("") || displayName.equals("ull,"))
 			displayName = racerInfo.substring((index = racerInfo.indexOf("username") + 11), index + racerInfo.substring(index).indexOf("\""));
-		for(int i = 0; i < displayName.length(); i++)
-			if(displayName.charAt(i) == '\\' && displayName.charAt(i+1) == 'u')
-				displayName = displayName.substring(0, i) + (char)(Integer.parseInt(displayName.substring(i + 2, i + 6), 16)) + displayName.substring(i + 6);
+		for(int i = 0; i < displayName.length() - 1; i++) {
+			if(displayName.charAt(i) == '\\')
+				if(displayName.charAt(i + 1) == '\\') {
+					if(i + 2 < displayName.length())
+						displayName = displayName.substring(0, i + 1) + displayName.substring(i + 3);
+					else displayName = displayName.substring(0, i + 1);
+				}
+				else if(displayName.charAt(i + 1) == 'u')
+					displayName = displayName.substring(0, i) + (char)(Integer.parseInt(displayName.substring(i + 2, i + 6), 16)) + displayName.substring(i + 6);
+		}
 		
 		u = new URL("https://www.nitrotype.com/index/605/bootstrap.js");
 		HttpURLConnection d = (HttpURLConnection) u.openConnection();
@@ -124,18 +131,18 @@ public class RankCars {
 				lastDate = 1420070400;
 			else if(i == 49 || i == 56)	//Popularity Contest ended by 2.0 update
 				lastDate = 1430179200;
-			else if(i == 82 || i == 108 || i == 114)	//2015 Summer Event
+			else if(i == 108)	//2015 Summer Event
 				lastDate = 1441065600;
 			else if(i == 116)	//2015 Halloween Event
 				lastDate = 1446336000;
 			else if(i == 118 || i == 122)	//2015 Xmaxx Event
 				lastDate = 1451779200;
-			else if(i == 115 || i == 124 || i == 126 || i == 127)	//2016 Summer Event
+			else if(i == 115 || i == 124 || i == 126)	//2016 Summer Event
 				lastDate = 1471392000;
 			//2016 Hallowampus Event
 			else if(i == 69 || i == 102 || i == 112 || i == 119 || i == 121 || i == 131 || i == 132 || i == 135)	//2016 Xmaxx Event
 				lastDate = 1483228800;
-			else if(i == 80 || i == 125 || i == 137 || i == 138 || i == 139)	//2017 Summer Event
+			else if(i == 125 || i == 137 || i == 138 || i == 139)	//2017 Summer Event
 				lastDate = 1502496000;
 			else if(i == 117 || i == 129 || i == 130 || i == 140)	//2017 Hallowampus Event
 				lastDate = 1509494400;
@@ -145,6 +152,8 @@ public class RankCars {
 				lastDate = 1522540800;
 			else if(i == 153 || i == 154)	//2018 PAC Event
 				lastDate = 1526601600;
+			//else if(i == 80 || i == 82 || i == 114 || i == 127 || i == 155 || i == 156 || i == 157 || i == 158)	//2018 Surf n' Turf Event
+				//lastDate = 1532044800;
 			else lastDate = System.currentTimeMillis() / 1000;
 			if(greg == 0) {
 				if(cars[i] == 1) {	//Car is owned
@@ -210,12 +219,24 @@ public class RankCars {
 		for(int i = 0; i < showcase.length; i++)
 			if(greg == 0 && showcase[i][1] != null)
 				embed.addInlineField(i + 1 + ". " + showcase[i][1], "**Value** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][4])) 
-						+ "\n**Sell Price** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][2])));
+						+ "\n**Sell Price** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][2]))
+						+ "\n[🔗NT Wiki](https://nitro-type.wikia.com/wiki/" + spacesToUnderscores(showcase[i][1]) + ")");
 			else if(greg == 1 && showcase[i][1] != null)
-				embed.addInlineField(i + 1 + ". " + showcase[i][1], "**Value** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][4]))
-						+ "\n**Buy Price** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][5])));
+				embed.addInlineField(i + 1 + ". " + showcase[i][1] , "**Value** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][4]))
+						+ "\n**Buy Price** " + Evaluate.moneyToText(Integer.parseInt(showcase[i][5]))
+						+ "\n[🔗NT Wiki](https://nitro-type.wikia.com/wiki/" + spacesToUnderscores(showcase[i][1]) + ")");
 		return embed;
 
+	}
+
+	private static String spacesToUnderscores(String string) {
+		String str = "";
+		for(int i = 0; i < string.length(); i++)
+			if(string.substring(i).startsWith(" "))
+				str += "_";
+			else
+				str += string.substring(i, i + 1);				
+		return str;
 	}
 
 }
