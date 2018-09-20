@@ -86,6 +86,7 @@ public class RankCars {
 			if((carsInfo = t.nextLine()).contains("CARS"))
 				break;
 		t.close();
+		carsInfo = carsInfo.substring(index = carsInfo.indexOf("data.push(['CARS'") + 13, index + carsInfo.substring(index).indexOf("]]);"));
 		
 		int size = Integer.parseInt(carsInfo.substring(carsInfo.lastIndexOf("id") + 4, carsInfo.lastIndexOf("}")));
 		int[] carValues = new int[size];
@@ -116,45 +117,7 @@ public class RankCars {
 			tempLiq = 0;
 			tempSub = 0;
 			tempTot = 0;
-			if(i == 70)	//2012 Xmaxx Event
-				lastDate = 1386028800;
-			else if(i == 83 || i == 84 || i == 86 || i == 87)	//2013 Summer Event
-				lastDate = 1375833600;
-			//2013 Halloween Event
-			else if(i == 99 || i == 101)	//2013 Xmaxx Event
-				lastDate = 1386028800;
-			else if(i == 81 || i == 109)	//2014 Summer Event
-				lastDate = 1408924800;
-			else if(i == 97)	//2014 Halloween Event
-				lastDate = 1414713600;
-			else if(i == 98 || i == 112 || i == 113)	//2014 Winter Event
-				lastDate = 1420070400;
-			else if(i == 49 || i == 56)	//Popularity Contest ended by 2.0 update
-				lastDate = 1430179200;
-			else if(i == 108)	//2015 Summer Event
-				lastDate = 1441065600;
-			else if(i == 116)	//2015 Halloween Event
-				lastDate = 1446336000;
-			else if(i == 118 || i == 122)	//2015 Xmaxx Event
-				lastDate = 1451779200;
-			else if(i == 115 || i == 124 || i == 126)	//2016 Summer Event
-				lastDate = 1471392000;
-			//2016 Hallowampus Event
-			else if(i == 69 || i == 102 || i == 112 || i == 119 || i == 121 || i == 131 || i == 132 || i == 135)	//2016 Xmaxx Event
-				lastDate = 1483228800;
-			else if(i == 125 || i == 137 || i == 138 || i == 139)	//2017 Summer Event
-				lastDate = 1502496000;
-			else if(i == 117 || i == 129 || i == 130 || i == 140)	//2017 Hallowampus Event
-				lastDate = 1509494400;
-			else if(i == 68 || i == 71 || i == 102 || i == 110 || i == 133 || i == 134 || i == 141 || i == 142 || i == 143 || i == 144 || i == 145)	//2017 Xmaxx Event
-				lastDate = 1514851200;
-			else if(i == 148 || i == 149 || i == 150 || i == 151)	//2018 Spring Fever Event
-				lastDate = 1522540800;
-			else if(i == 153 || i == 154)	//2018 PAC Event
-				lastDate = 1526601600;
-			//else if(i == 80 || i == 82 || i == 114 || i == 127 || i == 155 || i == 156 || i == 157 || i == 158)	//2018 Surf n' Turf Event
-				//lastDate = 1532044800;
-			else lastDate = System.currentTimeMillis() / 1000;
+			lastDate = lastObtainableDate(i + 1);
 			if(greg == 0) {
 				if(cars[i] == 1) {	//Car is owned
 					tempLiq += carValues[i] * 0.6;
@@ -172,11 +135,11 @@ public class RankCars {
 								if(showcase[j][1].charAt(m) == '\\' && showcase[j][1].charAt(m + 1) == 'u')
 									showcase[j][1] = showcase[j][1].substring(0, m) + (char)(Integer.parseInt(showcase[j][1].substring(m + 2, m + 6), 16)) + showcase[j][1].substring(m + 6);
 							showcase[j][2] = "" + tempLiq;
-							showcase[j][3] = "" + tempSub;	
+							showcase[j][3] = "" + tempSub;
 							showcase[j][4] = "" + tempTot;
 							showcase[j][5] = "" + carValues[i];
 							break;
-						}
+						}					
 				}
 			} else if(greg == 1){
 				if(cars[i] == 2) {	//Car is owned
@@ -227,6 +190,48 @@ public class RankCars {
 						+ "\n[🔗NT Wiki](https://nitro-type.wikia.com/wiki/" + spacesToUnderscores(showcase[i][1]) + ")");
 		return embed;
 
+	}
+
+	static long lastObtainableDate(int id) {
+		if(id == 71)	//2012 Xmaxx Event
+			return 1386028800;
+		else if(id == 84 || id == 85 || id == 87 || id == 88)	//2013 Summer Event
+			return 1375833600;
+		//2013 Halloween Event
+		else if(id == 100 || id == 102)	//2013 Xmaxx Event
+			return 1386028800;
+		else if(id == 82 || id == 110)	//2014 Summer Event
+			return 1408924800;
+		else if(id == 98)	//2014 Halloween Event
+			return 1414713600;
+		else if(id == 99 || id == 113 || id == 114)	//2014 Winter Event
+			return 1420070400;
+		else if(id == 50 || id == 57)	//Popularity Contest ended by 2.0 update
+			return 1430179200;
+		else if(id == 109)	//2015 Summer Event
+			return 1441065600;
+		else if(id == 117)	//2015 Halloween Event
+			return 1446336000;
+		else if(id == 119 || id == 123)	//2015 Xmaxx Event
+			return 1451779200;
+		else if(id == 116 || id == 125 || id == 127)	//2016 Summer Event
+			return 1471392000;
+		//2016 Hallowampus Event
+		else if(id == 70 || id == 103 || id == 113 || id == 120 || id == 122 || id == 132 || id == 133 || id == 136)	//2016 Xmaxx Event
+			return 1483228800;
+		else if(id == 126 || id == 138 || id == 139 || id == 140)	//2017 Summer Event
+			return 1502496000;
+		else if(id == 118 || id == 130 || id == 131 || id == 141)	//2017 Hallowampus Event
+			return 1509494400;
+		else if(id == 69 || id == 72 || id == 103 || id == 111 || id == 134 || id == 135 || id == 142 || id == 143 || id == 144 || id == 145 || id == 146)	//2017 Xmaxx Event
+			return 1514851200;
+		else if(id == 149 || id == 150 || id == 151 || id == 152)	//2018 Spring Fever Event
+			return 1522540800;
+		else if(id == 154 || id == 155)	//2018 PAC Event
+			return 1526601600;
+		else if(id == 81 || id == 83 || id == 115 || id == 128 || id == 156 || id == 157 || id == 158 || id == 159)	//2018 Surf n' Turf Event
+			return 1532044800;
+		else return System.currentTimeMillis() / 1000;
 	}
 
 	private static String spacesToUnderscores(String string) {

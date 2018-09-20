@@ -67,15 +67,18 @@ public class Evaluate {
 		if(displayName.equals("") || displayName.equals("ul"))
 			displayName = racerInfo.substring((index = racerInfo.indexOf("username") + 11), index + racerInfo.substring(index).indexOf("\""));
 		for(int i = 0; i < displayName.length() - 1; i++) {
+			//System.out.println(displayName);
 			if(displayName.charAt(i) == '\\')
 				if(displayName.charAt(i + 1) == '\\') {
 					if(i + 2 < displayName.length())
 						displayName = displayName.substring(0, i + 1) + displayName.substring(i + 3);
 					else displayName = displayName.substring(0, i + 1);
-				}
+				} 
+				else if(displayName.charAt(i + 1) == '/')
+					displayName = displayName.substring(0, i) + displayName.substring(i + 1);
 				else if(displayName.charAt(i + 1) == 'u')
 					displayName = displayName.substring(0, i) + (char)(Integer.parseInt(displayName.substring(i + 2, i + 6), 16)) + displayName.substring(i + 6);
-		}
+		} //System.out.println(displayName);
 		int experience = Integer.parseInt(racerInfo.substring((index = racerInfo.indexOf("experience") + 12), index + racerInfo.substring(index).indexOf(',')));
 		
 		int money = Integer.parseInt(racerInfo.substring((index = racerInfo.indexOf("money") + 7), index + racerInfo.substring(index).indexOf(',')));
@@ -92,6 +95,8 @@ public class Evaluate {
 		double age = ((System.currentTimeMillis() / 1000) - Long.parseLong(racerInfo.substring((index = racerInfo.indexOf("createdStamp") + 14), 
 				index + racerInfo.substring(index).indexOf(',')))) / 31536000.0;
 		
+		long highwpm = (long)(50000 * Math.pow(2, (Integer.parseInt(racerInfo.substring((index = racerInfo.indexOf("highestSpeed") + 14), index + racerInfo.substring(index).indexOf(','))) - 40) / 20.56)) - 12981;
+		
 		u = new URL("https://www.nitrotype.com/index/605/bootstrap.js");
 		HttpURLConnection d = (HttpURLConnection) u.openConnection();
 		d.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.79 Safari/537.36");
@@ -102,6 +107,7 @@ public class Evaluate {
 			if((carsInfo = t.nextLine()).contains("CARS"))
 				break;
 		t.close();
+		carsInfo = carsInfo.substring(index = carsInfo.indexOf("data.push(['CARS'") + 13, index + carsInfo.substring(index).indexOf("]]);"));
 		
 		int size = Integer.parseInt(carsInfo.substring(carsInfo.lastIndexOf("id") + 4, carsInfo.lastIndexOf("}")));
 		int[] carValues = new int[size];
@@ -126,46 +132,7 @@ public class Evaluate {
 		int liquidCars = 0, subjectiveCars = 0;
 		long lastDate = 0;
 		for(int i = 0; i < cars.length; i++) {
-			lastDate = 0;
-			if(i == 70)	//2012 Xmaxx Event
-				lastDate = 1386028800;
-			else if(i == 83 || i == 84 || i == 86 || i == 87)	//2013 Summer Event
-				lastDate = 1375833600;
-			//2013 Halloween Event
-			else if(i == 99 || i == 101)	//2013 Xmaxx Event
-				lastDate = 1386028800;
-			else if(i == 81 || i == 109)	//2014 Summer Event
-				lastDate = 1408924800;
-			else if(i == 97)	//2014 Halloween Event
-				lastDate = 1414713600;
-			else if(i == 98 || i == 112 || i == 113)	//2014 Winter Event
-				lastDate = 1420070400;
-			else if(i == 49 || i == 56)	//Popularity Contest ended by 2.0 update
-				lastDate = 1430179200;
-			else if(i == 108)	//2015 Summer Event
-				lastDate = 1441065600;
-			else if(i == 116)	//2015 Halloween Event
-				lastDate = 1446336000;
-			else if(i == 118 || i == 122)	//2015 Xmaxx Event
-				lastDate = 1451779200;
-			else if(i == 115 || i == 124 || i == 126)	//2016 Summer Event
-				lastDate = 1471392000;
-			//2016 Hallowampus Event
-			else if(i == 69 || i == 102 || i == 112 || i == 119 || i == 121 || i == 131 || i == 132 || i == 135)	//2016 Xmaxx Event
-				lastDate = 1483228800;
-			else if(i == 125 || i == 137 || i == 138 || i == 139)	//2017 Summer Event
-				lastDate = 1502496000;
-			else if(i == 117 || i == 129 || i == 130 || i == 140)	//2017 Hallowampus Event
-				lastDate = 1509494400;
-			else if(i == 68 || i == 71 || i == 102 || i == 110 || i == 133 || i == 134 || i == 141 || i == 142 || i == 143 || i == 144 || i == 145)	//2017 Xmaxx Event
-				lastDate = 1514851200;
-			else if(i == 148 || i == 149 || i == 150 || i == 151)	//2018 Spring Fever Event
-				lastDate = 1522540800;
-			else if(i == 153 || i == 154)	//2018 PAC Event
-				lastDate = 1526601600;
-			//else if(i == 80 || i == 82 || i == 114 || i == 127 || i == 155 || i == 156 || i == 157 || i == 158)	//2018 Surf n' Turf Event
-				//lastDate = 1532044800;
-			else lastDate = System.currentTimeMillis() / 1000;
+			lastDate = RankCars.lastObtainableDate(i + 1);
 			if(cars[i] == 1) {	//Car is owned
 				liquidCars += carValues[i] * 0.6;
 				subjectiveCars += carValues[i] * 0.4 * Math.pow(2.0, (System.currentTimeMillis() / 1000 - lastDate) / 31536000.0);
@@ -175,30 +142,31 @@ public class Evaluate {
 		}
 		
 		long liquid = money + nitros * 500 + liquidCars; 
-		long subjective = (long)(gold * 10000000 + Math.pow(2.0, age) * 50000 + experience + races * 750 + placed1 * 750 + placed2 * 500 + placed3 * 250 + session * 2000 + subjectiveCars + bonus);
+		long subjective = (long)(gold * 10000000 + Math.pow(2.0, age) * 50000 + experience + races * 750 + placed1 * 750 + placed2 * 500 + placed3 * 250 + session * 2000 + subjectiveCars + highwpm);
 		
 		if(team.contains("\""))
 			displayName = "[" + team.substring(1, team.length() - 1) + "]" + displayName;
 		
-		EmbedBuilder embed = new EmbedBuilder().setTitle("__**Account Value**__:").setDescription(moneyToText(liquid + subjective))
+		EmbedBuilder embed = new EmbedBuilder().setTitle("__**Account Value**__:").setDescription("**" + moneyToText(liquid + subjective) + "**")
 				.setAuthor(displayName, url, "")
 				.setColor(Color.PINK)
-				.addInlineField("Liquid", fractionToText(liquid, liquid + subjective))
-				.addInlineField("Subjective", fractionToText(subjective, liquid + subjective))
-				.addField("__**Liquid Value**__:", moneyToText(liquid))
-				.addInlineField("Cash", fractionToText(money, liquid))
-				.addInlineField("Nitros", fractionToText(nitros * 500, liquid))
-				.addInlineField("Cars", fractionToText(liquidCars, liquid))
-				.addField("__**Subjective Value**__:", moneyToText(subjective));
+				.addInlineField("Liquid", "**" + fractionToText(liquid, liquid + subjective) + "**")
+				.addInlineField("Subjective", "**" +fractionToText(subjective, liquid + subjective) + "**")
+				.addField("__**Liquid Value**__:", "**" + moneyToText(liquid) + "**")
+				.addInlineField("Cash", "**" + fractionToText(money, liquid) + "**" + " (" + moneyToText(money) + ")")
+				.addInlineField("Nitros", "**" + fractionToText(nitros * 500, liquid) + "**" + " (" + moneyToText(nitros * 500) + ")")
+				.addInlineField("Cars", "**" + fractionToText(liquidCars, liquid) + "**" + " (" + moneyToText(liquidCars) + ")")
+				.addField("__**Subjective Value**__:", "**" + moneyToText(subjective) + "**");
 		if(gold != 0)
-			embed.addInlineField("Gold", fractionToText(gold * 10000000, subjective)).setColor(new Color(0xFFD700));
-		embed.addInlineField("Age", fractionToText(Math.pow(2.0, age) * 50000, subjective))
-				.addInlineField("Experience", fractionToText(experience, subjective))
-				.addInlineField("Races", fractionToText(races * 750 + placed1 * 750 + placed2 * 500 + placed3 * 250, subjective))
-				.addInlineField("Longest Session", fractionToText(session * 2000, subjective))
-				.addInlineField("Cars", fractionToText(subjectiveCars, subjective));
+			embed.addInlineField("Gold", "**" + fractionToText(gold * 10000000, subjective) + "**" + " (" + moneyToText(gold * 10000000) + ")").setColor(new Color(0xFFD700));
+		embed.addInlineField("Age", "**" + fractionToText(Math.pow(2.0, age) * 50000, subjective) + "**" + " (" + moneyToText((long)(Math.pow(2.0, age) * 50000)) + ")")
+				.addInlineField("Experience", "**" + fractionToText(experience, subjective) + "**" + " (" + moneyToText(experience) + ")")
+				.addInlineField("Races", "**" + fractionToText(races * 750 + placed1 * 750 + placed2 * 500 + placed3 * 250, subjective) + "**" + " (" + moneyToText(races * 750 + placed1 * 750 + placed2 * 500 + placed3 * 250) + ")")
+				.addInlineField("Highest Speed", "**" + fractionToText(highwpm, subjective) + "**" + " (" + moneyToText(highwpm) + ")")
+				.addInlineField("Longest Session", "**" + fractionToText(session * 2000, subjective) + "**" + " (" + moneyToText(session * 2000) + ")")		
+				.addInlineField("Cars", "**" + fractionToText(subjectiveCars, subjective) + "**" + " (" + moneyToText(subjectiveCars) + ")");
 		if(bonus !=0)
-			embed.addInlineField("Bonus", fractionToText(bonus, subjective));
+			embed.addInlineField("Bonus", "**" +fractionToText(bonus, subjective) + "**" + " (" + moneyToText(bonus) + ")");
 		return embed;
 	}
 
@@ -359,9 +327,7 @@ public class Evaluate {
 		double accuracy1 = 0.0;
 		if(typed1 - typos1 != 0)
 			accuracy1 = (int)((typed1 - typos1) * 10000.0) / typed1 / 100.0;
-		System.out.println(accuracy1);
 		
-		//TODO accuracy2
 		int typed2 = 0, typos2 = 0; 
 		index = racerInfo2.indexOf("raceLogs");
 		if(racerInfo2.substring(index).contains("typed"))
@@ -375,7 +341,6 @@ public class Evaluate {
 		double accuracy2 = 0.0; 
 		if(typed2 - typos2 != 0)
 			accuracy2 = (int)((typed2 - typos2) * 10000.0) / typed2 / 100.0;
-		System.out.println(accuracy2);
 		
 		int races1 = Integer.parseInt(racerInfo1.substring((index = racerInfo1.indexOf("racesPlayed") + 13), index + racerInfo1.substring(index).indexOf(',')));
 		int placed11 = Integer.parseInt(racerInfo1.substring((index = racerInfo1.indexOf("placed1") + 9), index + racerInfo1.substring(index).indexOf(',')));
@@ -414,6 +379,7 @@ public class Evaluate {
 			if((carsInfo = s3.nextLine()).contains("CARS"))
 				break;
 		s3.close();
+		carsInfo = carsInfo.substring(index = carsInfo.indexOf("data.push(['CARS'") + 13, index + carsInfo.substring(index).indexOf("]]);"));
 		
 		int size = Integer.parseInt(carsInfo.substring(carsInfo.lastIndexOf("id") + 4, carsInfo.lastIndexOf("}")));
 		int[] carValues = new int[size];
@@ -447,46 +413,7 @@ public class Evaluate {
 		int liquidCars1 = 0, subjectiveCars1 = 0, numCars1 = 0;
 		long lastDate = 0;
 		for(int i = 0; i < cars1.length; i++) {
-			lastDate = 0;
-			if(i == 70)	//2012 Xmaxx Event
-				lastDate = 1386028800;
-			else if(i == 83 || i == 84 || i == 86 || i == 87)	//2013 Summer Event
-				lastDate = 1375833600;
-			//2013 Halloween Event
-			else if(i == 99 || i == 101)	//2013 Xmaxx Event
-				lastDate = 1386028800;
-			else if(i == 81 || i == 109)	//2014 Summer Event
-				lastDate = 1408924800;
-			else if(i == 97)	//2014 Halloween Event
-				lastDate = 1414713600;
-			else if(i == 98 || i == 112 || i == 113)	//2014 Winter Event
-				lastDate = 1420070400;
-			else if(i == 49 || i == 56)	//Popularity Contest ended by 2.0 update
-				lastDate = 1430179200;
-			else if(i == 108)	//2015 Summer Event
-				lastDate = 1441065600;
-			else if(i == 116)	//2015 Halloween Event
-				lastDate = 1446336000;
-			else if(i == 118 || i == 122)	//2015 Xmaxx Event
-				lastDate = 1451779200;
-			else if(i == 115 || i == 124 || i == 126)	//2016 Summer Event
-				lastDate = 1471392000;
-			//2016 Hallowampus Event
-			else if(i == 69 || i == 102 || i == 112 || i == 119 || i == 121 || i == 131 || i == 132 || i == 135)	//2016 Xmaxx Event
-				lastDate = 1483228800;
-			else if(i == 125 || i == 137 || i == 138 || i == 139)	//2017 Summer Event
-				lastDate = 1502496000;
-			else if(i == 117 || i == 129 || i == 130 || i == 140)	//2017 Hallowampus Event
-				lastDate = 1509494400;
-			else if(i == 68 || i == 71 || i == 102 || i == 110 || i == 133 || i == 134 || i == 141 || i == 142 || i == 143 || i == 144 || i == 145)	//2017 Xmaxx Event
-				lastDate = 1514851200;
-			else if(i == 148 || i == 149 || i == 150 || i == 151)	//2018 Spring Fever Event
-				lastDate = 1522540800;
-			else if(i == 153 || i == 154)	//2018 PAC Event
-				lastDate = 1526601600;
-			//else if(i == 80 || i == 82 || i == 114 || i == 127 || i == 155 || i == 156 || i == 157 || i == 158)	//2018 Surf n' Turf Event
-				//lastDate = 1532044800;
-			else lastDate = System.currentTimeMillis() / 1000;
+			lastDate = RankCars.lastObtainableDate(i + 1);
 			if(cars1[i] == 1) {	//Car is owned
 				liquidCars1 += carValues[i] * 0.6;
 				subjectiveCars1 += carValues[i] * 0.4 * Math.pow(2.0, (System.currentTimeMillis() / 1000 - lastDate) / 31536000.0);
@@ -497,46 +424,7 @@ public class Evaluate {
 		}
 		int liquidCars2 = 0, subjectiveCars2 = 0, numCars2 = 0;
 		for(int i = 0; i < cars2.length; i++) {
-			lastDate = 0;
-			if(i == 70)	//2012 Xmaxx Event
-				lastDate = 1386028800;
-			else if(i == 83 || i == 84 || i == 86 || i == 87)	//2013 Summer Event
-				lastDate = 1375833600;
-			//2013 Halloween Event
-			else if(i == 99 || i == 101)	//2013 Xmaxx Event
-				lastDate = 1386028800;
-			else if(i == 81 || i == 109)	//2014 Summer Event
-				lastDate = 1408924800;
-			else if(i == 97)	//2014 Halloween Event
-				lastDate = 1414713600;
-			else if(i == 98 || i == 112 || i == 113)	//2014 Winter Event
-				lastDate = 1420070400;
-			else if(i == 49 || i == 56)	//Popularity Contest ended by 2.0 update
-				lastDate = 1430179200;
-			else if(i == 108)	//2015 Summer Event
-				lastDate = 1441065600;
-			else if(i == 116)	//2015 Halloween Event
-				lastDate = 1446336000;
-			else if(i == 118 || i == 122)	//2015 Xmaxx Event
-				lastDate = 1451779200;
-			else if(i == 115 || i == 124 || i == 126)	//2016 Summer Event
-				lastDate = 1471392000;
-			//2016 Hallowampus Event
-			else if(i == 69 || i == 102 || i == 112 || i == 119 || i == 121 || i == 131 || i == 132 || i == 135)	//2016 Xmaxx Event
-				lastDate = 1483228800;
-			else if(i == 125 || i == 137 || i == 138 || i == 139)	//2017 Summer Event
-				lastDate = 1502496000;
-			else if(i == 117 || i == 129 || i == 130 || i == 140)	//2017 Hallowampus Event
-				lastDate = 1509494400;
-			else if(i == 68 || i == 71 || i == 102 || i == 110 || i == 133 || i == 134 || i == 141 || i == 142 || i == 143 || i == 144 || i == 145)	//2017 Xmaxx Event
-				lastDate = 1514851200;
-			else if(i == 148 || i == 149 || i == 150 || i == 151)	//2018 Spring Fever Event
-				lastDate = 1522540800;
-			else if(i == 153 || i == 154)	//2018 PAC Event
-				lastDate = 1526601600;
-			//else if(i == 80 || i == 82 || i == 114 || i == 127 || i == 155 || i == 156 || i == 157 || i == 158)	//2018 Surf n' Turf Event
-				//lastDate = 1532044800;
-			else lastDate = System.currentTimeMillis() / 1000;
+			lastDate = RankCars.lastObtainableDate(i + 1);
 			if(cars2[i] == 1) {	//Car is owned
 				liquidCars2 += carValues[i] * 0.6;
 				subjectiveCars2 += carValues[i] * 0.4 * Math.pow(2.0, (System.currentTimeMillis() / 1000 - lastDate) / 31536000.0);
@@ -569,7 +457,7 @@ public class Evaluate {
 		else if(days == 1)
 			dayStr = "1 day ";
 		else dayStr = days + " days ";
-		
+				
 		long liquid1 = money1 + nitros1 * 500 + liquidCars1;
 		long subjective1 = (long)(gold1 * 10000000 + Math.pow(2.0, ((System.currentTimeMillis() / 1000) - age1) / 31536000.0) * 50000 + experience1 + races1 * 750 + placed11 * 750 + placed21 * 500 + placed31 * 250 + session1 * 2000 + subjectiveCars1);
 		long liquid2 = money2 + nitros2 * 500 + liquidCars2; 
@@ -586,11 +474,11 @@ public class Evaluate {
 						+ "\n**Average Speed**: " + avgSpd1 + " wpm"
 						+ "\n**Highest Speed**: " + highSpd1 + " wpm"
 						+ "\n**Accuracy**: " + accuracy1 + "%"
-						+ "\n**Total Races**: " + numberToText(races1) + " races"
-						+ "\n**Longest Session**: " + numberToText(session1) + " races"
+						+ "\n**Total Races**: " + numberToText(races1) + plural(" race", races1)//race1Str
+						+ "\n**Longest Session**: " + numberToText(session1) + plural(" race", session1)
 						+ "\n**Money**: " + moneyToText(money1)
 						+ "\n**Account Value**: " + moneyToText(liquid1 + subjective1)
-						+ "\n**Number of Cars**: " + numCars1 + " cars"
+						+ "\n**Number of Cars**: " + numCars1 + plural(" car", numCars1)//car1Str
 						+ "\n**Achievement Points**: " + numberToText(achPts1)
 						+ "\n[🔗Profile](" + url1 + ")")
 				.addInlineField(displayName2,
@@ -600,26 +488,26 @@ public class Evaluate {
 						+ "\n**Average Speed**: " + avgSpd2 + " wpm"
 						+ "\n**Highest Speed**: " + highSpd2 + " wpm"
 						+ "\n**Accuracy**: " + accuracy2 + "%"
-						+ "\n**Total Races**: " + numberToText(races2) + " races"
-						+ "\n**Longest Session**: " + numberToText(session2) + " races"
+						+ "\n**Total Races**: " + numberToText(races2) + plural(" race", races2)
+						+ "\n**Longest Session**: " + numberToText(session2) + plural(" race", session2)
 						+ "\n**Money**: " + moneyToText(money2)
 						+ "\n**Account Value**: " + moneyToText(liquid2 + subjective2)
-						+ "\n**Number of Cars**: " + numCars2 + " cars"
+						+ "\n**Number of Cars**: " + numCars2 + plural(" car", numCars2)
 						+ "\n**Achievement Points**: " + numberToText(achPts2)
 						+ "\n[🔗Profile](" + url2 + ")")
 				.addField("Difference", "```diff"
 						+ "\n" + positiveOrNegative(age2, age1) + yearStr + dayStr//Age
-						+ "\n" + positiveOrNegative(level1, level2) + numberToText(Math.abs(level1 - level2)) + " levels"//Level
-						+ "\n" + positiveOrNegative(experience1, experience2) + numberToText(Math.abs(experience1 - experience2)) + " experience points"//Experience
+						+ "\n" + positiveOrNegative(level1, level2) + numberToText(Math.abs(level1 - level2)) + plural(" level", level1 - level2)//Level
+						+ "\n" + positiveOrNegative(experience1, experience2) + numberToText(Math.abs(experience1 - experience2)) + plural(" experience point", experience1 - experience2)//Experience
 						+ "\n" + positiveOrNegative(avgSpd1, avgSpd2) + numberToText(Math.abs(avgSpd1 - avgSpd2)) + " average wpm"//Avg Speed
 						+ "\n" + positiveOrNegative(highSpd1, highSpd2) + numberToText(Math.abs(highSpd1 - highSpd2)) + " highest wpm"//Highest Speed
 						+ "\n" + positiveOrNegative(accuracy1, accuracy2) + Math.abs((int)(100 * (accuracy1 - accuracy2)) / 100.0) + "% accuracy"//Accuracy
-						+ "\n" + positiveOrNegative(races1, races2) + numberToText(Math.abs(races1 - races2)) + " total races"//Total Races
-						+ "\n" + positiveOrNegative(session1, session2) + numberToText(Math.abs(session1 - session2)) + " session races"//Longest Session
+						+ "\n" + positiveOrNegative(races1, races2) + numberToText(Math.abs(races1 - races2)) + plural(" total race", races1 - races2)//Total Races
+						+ "\n" + positiveOrNegative(session1, session2) + numberToText(Math.abs(session1 - session2)) + plural(" session race", session1 - session2)//Longest Session
 						+ "\n" + positiveOrNegative(money1, money2) + moneyToText(Math.abs(money1 - money2)) + " money"//Money
 						+ "\n" + positiveOrNegative(liquid1 + subjective1, liquid2 + subjective2) + moneyToText(Math.abs(liquid1 + subjective1 - (liquid2 + subjective2))) + " account value"//Account Value
-						+ "\n" + positiveOrNegative(numCars1, numCars2) + numberToText(Math.abs(numCars1 - numCars2)) + " cars"//Number of Cars
-						+ "\n" + positiveOrNegative(achPts1, achPts2) + numberToText(Math.abs(achPts1 - achPts2)) + " achievement points"//Achievement points
+						+ "\n" + positiveOrNegative(numCars1, numCars2) + numberToText(Math.abs(numCars1 - numCars2)) + plural(" car", numCars1 - numCars2)//Number of Cars
+						+ "\n" + positiveOrNegative(achPts1, achPts2) + numberToText(Math.abs(achPts1 - achPts2)) + plural(" achievement point", achPts1 - achPts2)//Achievement points
 						+ "```")
 		;				
 			
@@ -627,6 +515,12 @@ public class Evaluate {
 	}
 	
 	
+
+	private static String plural(String unit, int value) {
+		if(Math.abs(value) != 1)
+			unit += 's';
+		return unit;
+	}
 
 	public static String fractionToText(long nominator, long denominator) {
 		return (long)(10000.0 * nominator / denominator) / 100.0 + "%";

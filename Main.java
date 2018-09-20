@@ -17,19 +17,21 @@ import org.javacord.api.entity.user.UserStatus;
 public class Main {
 	
 	public static String[][] commands = {
-			{"L.help", "Show this list of commands."},
-			{"L.register", "Register an account to your Discord ID.\n`l.register [username OR url]`"},
-			{"L.unregister", "Remove a linked account from your Discord ID."},
-			{"L.value", "Evaluate an account.\n`l.value [username OR url OR @registeredDiscord] [bonus value]`"},
-			{"L.compare", "**Currently under development**\nCompare two accounts.\n`l.compare [username OR url OR @registeredDiscord] [username OR url OR @registeredDiscord]`"},
-			{"L.cars", "Rank an account's cars.\n`l.cars [username OR url OR @registeredDiscord] [number of cars]`"},
-			{"L.soldcars", "Rank an account's sold cars.\n`l.soldCars [username OR url OR @registeredDiscord] [number of cars]`"},
+			{"help", "Show this list of commands."},
+			{"register", "Register an account to your Discord ID.\n`l.register [username OR url]`"},
+			{"unregister", "Remove a linked account from your Discord ID."},
+			{"value", "Evaluate an account.\n`l.value [username OR url OR @registeredDiscord] [bonus value]`"},
+			{"compare", "**Currently under development**\nCompare two accounts.\n`l.compare [username OR url OR @registeredDiscord] [username OR url OR @registeredDiscord]`"},
+			{"cars", "Rank an account's cars.\n`l.cars [username OR url OR @registeredDiscord] [number of cars]`"},
+			{"soldcars", "Rank an account's sold cars.\n`l.soldCars [username OR url OR @registeredDiscord] [number of cars]`"},
 			//TODO L.team [team tag OR username OR url OR @registeredDiscord]
-			{"L.info", "Learn about this bot."}
+			{"info", "Learn about this bot."},
+			{"cascade", "Translate QWERTY into Cascade"},
+			{"qwerty", "Translate Cascade into QWERTY"}
 	}, errors = {
-			{"Empty command"}, 
-			{"Unrecognized command"}, 
-			{"Runtime"}, 
+			{"Empty command"},
+			{"Unrecognized command"},
+			{"Runtime"},
 			{"Invalid argument"},
 			{"Registration failure"}
 	};
