@@ -3291,7 +3291,7 @@ public class Commands implements MessageCreateListener {
 	
 	private EmbedBuilder minesweeper(String bombs, String difficulty) {
 		
-		System.out.printf("minesweeper(%s, %s)%n");
+		System.out.printf("minesweeper(%s, %s)%n", bombs, difficulty);
 		
 		int mines;
 		try {
@@ -3892,7 +3892,7 @@ public class Commands implements MessageCreateListener {
 	}
 	private long carValue(JSONArray carInfo, long carId) {
 		
-		System.out.printf("carValue(JSONArray, %d)%n", carInfo, carId);
+		System.out.printf("carValue(JSONArray, %d)%n", carId);
 		
 		for(int i = 0; i < carInfo.size(); i++)
 			if(carId == (long) ((JSONObject) carInfo.get(i)).get("carID"))
