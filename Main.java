@@ -46,7 +46,7 @@ import org.json.simple.parser.ParseException;
  * </br>It also has functions to bind Discord users to their Nitro Type accounts to allow for easier access of information, as well as doubling as a form of verification for private servers.
  * </br>This bot also is capable of providing a security check when new users join a server, to identify potential abuse based upon the account's creation date, profile picture, name and other info.
  * 
- * @version 2.20200924.2136
+ * @version 2.20200927.1105
  * @author Nes370
  */
 public class Main {

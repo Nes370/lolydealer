@@ -629,7 +629,7 @@ public class Commands implements MessageCreateListener {
 							.addField("Discord Username", user.getDiscriminatedName())
 							.addField("Discord Display Name", user.getDisplayName(server))
 							.addField("Discord Mention", "<@" + racer + ">")
-							.addField("Nitro Type ID", Long.toString(userID) + " [🔗](https://www.nitrotype.com/api/players/" + Long.toString(userID) + ")")
+							.addField("Nitro Type ID", Long.toString(userID) + " [🔗](https://test.nitrotype.com/api/players/" + Long.toString(userID) + ")")
 							.addField("Nitro Type Username", username + " [🔗](https://www.nitrotype.com/racer/" + username + ")")
 							.setColor(Color.GREEN);
 					if(displayName != null)
@@ -645,7 +645,7 @@ public class Commands implements MessageCreateListener {
 		if(displayName == null || displayName.equals(""))
 			displayName = username;
 		return new EmbedBuilder()
-				.addField("Nitro Type ID", Long.toString(userID) + " [🔗](https://www.nitrotype.com/api/players/" + Long.toString(userID) + ")")
+				.addField("Nitro Type ID", Long.toString(userID) + " [🔗](https://test.nitrotype.com/api/players/" + Long.toString(userID) + ")")
 				.addField("Nitro Type Username", username + " [🔗](https://www.nitrotype.com/racer/" + username + ")")
 				.addField("Nitro Type Display Name", displayName)
 				.setColor(Color.GREEN);
@@ -1124,9 +1124,9 @@ public class Commands implements MessageCreateListener {
 					JSONArray car = (JSONArray) cars.get(i);
 					if(((String) car.get(1)).equals("owned")) {
 						liquidCars += 0.6 * carValue(carInfo, (long) car.get(0));
-						subjectiveCars += 0.4 * carValue(carInfo, (long) car.get(0)) * Math.pow(2, (System.currentTimeMillis() / 1000 - lastObtainable((long) car.get(0))) / 31536000.0);
-					} else if(System.currentTimeMillis() / 1000 - 41688324 > lastObtainable((long) car.get(0)))
-						subjectiveCars += carValue(carInfo, (long) car.get(0)) * (0.4 * Math.pow(2, (System.currentTimeMillis() / 1000 - lastObtainable((long) car.get(0))) / 31536000.0) - 1);
+						subjectiveCars += 0.4 * carValue(carInfo, (long) car.get(0)) * Math.pow(2, (System.currentTimeMillis() / 1000 - lastObtainable((int) (long) car.get(0))) / 31536000.0);
+					} else if(System.currentTimeMillis() / 1000 - 41688324 > lastObtainable((int) (long) car.get(0)))
+						subjectiveCars += carValue(carInfo, (long) car.get(0)) * (0.4 * Math.pow(2, (System.currentTimeMillis() / 1000 - lastObtainable((int) (long) car.get(0))) / 31536000.0) - 1);
 				}
 				
 				long liquid = money + liquidCars;
@@ -1677,6 +1677,8 @@ public class Commands implements MessageCreateListener {
 			result += "-Channel\nA Discord channel is visually represented by a blue highlighted text in the format #channel-name, and is internally formatted as <#Channel ID>.\nEx: <#564881373039689735>\n";
 		if(parameter.contains("Message"))
 			result += "-Message\nAny string of characters.\n";
+		if(parameter.contains("Stat"))
+			result += "-Stat\nA statistic used to order a leaderboard.\nAccepted values (omitted):\n+races (played)\n+first (place)\n+second (place)\n+third (place)\n+accuracy\n+(money) spent\n+high (speed)\n+(avg) speed\n+(oldest) active (account)\n+(oldest) age (account)\n+(most) nonbonus (experience)\n+(most) bonus (experience)\n+(total) experience\n+level\n+totalcars\n+sold (cars)\n+(owned) cars\n+(play) time\n+(profile) view (count)\n+achievement (points)\n+used (nitros)\n+(longest) session\n+rank\n+density\n+value";
 		return result;
 	}
 	
@@ -1820,6 +1822,13 @@ public class Commands implements MessageCreateListener {
 		
 		JSONObject racerInfo = getRacerInfo(user);
 		
+		JSONArray raceLogs = (JSONArray) racerInfo.get("raceLogs");
+		
+		if(raceLogs == null) {
+			racerInfo = getRacerInfo("#" + (long) racerInfo.get("userID"));
+			raceLogs = (JSONArray) racerInfo.get("raceLogs");
+		}
+		
 		byte gold = 0;
 		if(((String) racerInfo.get("membership")).equals("gold"))
 			gold++;
@@ -1832,7 +1841,6 @@ public class Commands implements MessageCreateListener {
 		if(racerInfo.get("displayName") != null && !((String) racerInfo.get("displayName")).equals(""))
 			displayName = (String) racerInfo.get("displayName");
 		
-		JSONArray raceLogs = (JSONArray) racerInfo.get("raceLogs");
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		
 		EmbedBuilder embed = new EmbedBuilder().setAuthor(tag + " " + displayName + "\n" + title, "https://www.nitrotype.com/racer/" + (String) racerInfo.get("username"), "");
@@ -1844,7 +1852,7 @@ public class Commands implements MessageCreateListener {
 		String data = "```\n";
 		long time = 0, lastTime;
 		//int ten = 0;
-		for(int i = 0; i < raceLogs.size(); i++) {
+		for(int i = 0; i < raceLogs.size(); i++) { // TODO might be broken
 			JSONObject raceLog = (JSONObject) raceLogs.get(i);
 			long typed = (long) raceLog.get("typed");
 			long errs = (long) raceLog.get("errs");
@@ -1937,7 +1945,7 @@ public class Commands implements MessageCreateListener {
 			}
 			
 			if(((String) member.get("status")).equals("banned")) {
-				banned += "**" + name + "**" + " [\\🔗](https://www.nitrotype.com/api/players/" + (long) member.get("userID") + ")\n";
+				banned += "**" + name + "**" + " [\\🔗](https://test.nitrotype.com/api/players/" + (long) member.get("userID") + ")\n";
 				banCount++;
 			}
 			
@@ -2173,6 +2181,12 @@ public class Commands implements MessageCreateListener {
 				}
 				
 				JSONArray raceLogs = (JSONArray) racerJSON.get("raceLogs");
+				
+				if(raceLogs == null) {
+					racerJSON = getRacerInfo("#" + (long) racerJSON.get("userID"));
+					raceLogs = (JSONArray) racerJSON.get("raceLogs");
+				}
+				
 				long typed = 0, errs = 0;
 				for(int i = 0; i < raceLogs.size(); i++) {
 					JSONObject race = (JSONObject) raceLogs.get(i);
@@ -2292,6 +2306,12 @@ public class Commands implements MessageCreateListener {
 					user.removeRole(TBZRole);
 				
 				JSONArray raceLogs = (JSONArray) racerJSON.get("raceLogs");
+				
+				if(raceLogs == null) {
+					racerJSON = getRacerInfo("#" + (long) racerJSON.get("userID"));
+					raceLogs = (JSONArray) racerJSON.get("raceLogs");
+				}
+				
 				long typed = 0, errs = 0;
 				for(int i = 0; i < raceLogs.size(); i++) {
 					JSONObject race = (JSONObject) raceLogs.get(i);
@@ -2674,6 +2694,12 @@ public class Commands implements MessageCreateListener {
 				
 				
 				JSONArray raceLogs = (JSONArray) racerJSON.get("raceLogs");
+				
+				if(raceLogs == null) {
+					racerJSON = getRacerInfo("#" + (long) racerJSON.get("userID"));
+					raceLogs = (JSONArray) racerJSON.get("raceLogs");
+				}
+				
 				long typed = 0, errs = 0;
 				for(int i = 0; i < raceLogs.size(); i++) {
 					JSONObject race = (JSONObject) raceLogs.get(i);
@@ -2863,6 +2889,12 @@ public class Commands implements MessageCreateListener {
 				
 				{
 					JSONArray raceLogs = (JSONArray) racerJSON.get("raceLogs");
+					
+					if(raceLogs == null) {
+						racerJSON = getRacerInfo("#" + (long) racerJSON.get("userID"));
+						raceLogs = (JSONArray) racerJSON.get("raceLogs");
+					}
+					
 					long typed = 0, errs = 0;
 					for(int i = 0; i < raceLogs.size(); i++) {
 						JSONObject race = (JSONObject) raceLogs.get(i);
@@ -2937,7 +2969,8 @@ public class Commands implements MessageCreateListener {
 					if(displayName != null && !displayName.equals("") && !displayName.equals("null")) {
 						name += displayName;
 					} else name += (String) racerJSON.get("username");
-					user.updateNickname(server, name);
+					
+					user.updateNickname(server, name).get();
 				}
 				
 			}
@@ -3208,7 +3241,11 @@ public class Commands implements MessageCreateListener {
 				highestSpeed = (long) racerInfo.get("highestSpeed");
 		long achievementPoints = 0;
 		if(racerInfo.get("achievementPoints") != null)
-			achievementPoints = Long.parseLong((String) racerInfo.get("achievementPoints"));
+			try {
+				achievementPoints = (long) racerInfo.get("achievementPoints");
+			} catch(ClassCastException cce) {
+				achievementPoints = Long.parseLong((String) racerInfo.get("achievementPoints")); //TODO switch to long
+			}
 		
 		String title = "", tag = "", displayName = (String) racerInfo.get("username");
 		if(racerInfo.get("title") != null)
@@ -3737,9 +3774,9 @@ public class Commands implements MessageCreateListener {
 			JSONArray car = (JSONArray) cars.get(i);
 			if(((String) car.get(1)).equals("owned")) {
 				liquidCars += 0.6 * carValue(carInfo, (long) car.get(0));
-				subjectiveCars += 0.4 * carValue(carInfo, (long) car.get(0)) * Math.pow(2, (System.currentTimeMillis() / 1000 - lastObtainable((long) car.get(0))) / 31536000.0);
-			} else if(System.currentTimeMillis() / 1000 - 41688324 > lastObtainable((long) car.get(0)))
-				subjectiveCars += carValue(carInfo, (long) car.get(0)) * (0.4 * Math.pow(2, (System.currentTimeMillis() / 1000 - lastObtainable((long) car.get(0))) / 31536000.0) - 1);
+				subjectiveCars += 0.4 * carValue(carInfo, (long) car.get(0)) * Math.pow(2, (System.currentTimeMillis() / 1000 - lastObtainable((int) (long) car.get(0))) / 31536000.0);
+			} else if(System.currentTimeMillis() / 1000 - 41688324 > lastObtainable((int) (long) car.get(0)))
+				subjectiveCars += carValue(carInfo, (long) car.get(0)) * (0.4 * Math.pow(2, (System.currentTimeMillis() / 1000 - lastObtainable((int) (long) car.get(0))) / 31536000.0) - 1);
 		}
 		
 		long bonusValue = 0;
@@ -3825,70 +3862,79 @@ public class Commands implements MessageCreateListener {
 	        exp += 800 * i + 600;
 	    return exp;
 	}
-	private long lastObtainable(long carId) {
+	private long lastObtainable(int carID) {
 		
-		System.out.printf("lastObtainable(%d)%n", carId);
+		//System.out.printf("lastObtainable(%d)%n", carId);
 		
-		//2012 XMaxx Event
-		if(carId == 100)	//2013 Xmaxx Event
-			return 1386028800;
-		else if(carId == 99 || carId == 113 || carId == 114)	//2014 Winter Event
-			return 1420070400;
-		else if(carId == 119 || carId == 123)	//2015 Xmaxx Event
-			return 1451779200;
-		else if(carId == 70 || carId == 113 || carId == 120 || carId == 122 || carId == 132 || carId == 133 || carId == 136)	//2016 Xmaxx Event
-			return 1483228800;
-		else if(carId == 72 || carId == 111 || carId == 135 || carId == 142 || carId == 143 || carId == 144 || carId == 145 || carId == 146)	//2017 Xmaxx Event
-			return 1514851200;
-		else if(carId == 69 || carId == 71 || carId == 102 || carId == 103 || carId == 114 || carId == 134 || carId == 167 || carId == 168 || carId == 169) //2018 Xmaxx Event
-			return 1546300800;
+		switch(carID) {
 		
-		else if(carId == 84 || carId == 85 || carId == 87 || carId == 88)	//2013 Summer Event
-			return 1375833600;
-		else if(carId == 82 || carId == 110)	//2014 Summer Event
-			return 1408924800;
-		else if(carId == 109)	//2015 Summer Event
-			return 1441065600;
-		else if(carId == 116 || carId == 125 || carId == 127)	//2016 Summer Event
-			return 1471392000;
-		else if(carId == 126 || carId == 138 || carId == 139 || carId == 140)	//2017 Summer Event
-			return 1502496000;
-		else if(carId == 81 || carId == 83 || carId == 115 || carId == 128 || carId == 156 || carId == 157 || carId == 158 || carId == 159 || carId == 160)	//2018 Surf n' Turf Event
-			return 1532044800;
+		// Admin Exclusive
+			case 9: case 104: case 170: case 172: case 175: case 179: case 180: return 1315483200;
 		
-		//2013 Halloween Event
-		else if(carId == 98)	//2014 Halloween Event
-			return 1414713600;
-		else if(carId == 117)	//2015 Halloween Event
-			return 1446336000;
-		//2016 Hallowampus Event
-		else if(carId == 118 || carId == 130 || carId == 131 || carId == 141)	//2017 Hallowampus Event
-			return 1509494400;
-
-		else if(carId == 50 || carId == 57)	//Popularity Contest ended by 2.0 update
-			return 1430179200;
-		
-		else if(carId == 149 || carId == 150 || carId == 151 || carId == 152)	//2018 Spring Fever Event
-			return 1522540800;
-		
-		else if(carId == 154 || carId == 155)	//2018 PAC Event
-			return 1526601600;
-
-		else if(carId == 161 || carId == 162 || carId == 163 || carId == 164 || carId == 165) //2018 Back 2 School Event
-			return 1539129600;
-		
-		else if(carId == 9 || carId == 104 || carId == 170 || carId == 172 || carId == 175 || carId == 179 || carId == 180) //Admin exlcusive
-			return 1315483200;
-		
-		else if(carId == 21) //Nitro transactions removed June 17th 2019
-			return 1560776400;
-		
-		else if(carId == 177 || carId == 178)
-			return 1563062400;	//Season 21 (ended July 14th 2019)
-		
-		//else if(carId == 181 || carId == 182 || carId == 183)
-		//	return 1567166400;		//season 22 (ended Aug 30th 2019)
-		return System.currentTimeMillis() / 1000;
+		// 2012 XMaxx Event
+		// 2013 XMaxx Event
+			case 100: return 1386028800;
+		// 2014 Winter Event
+			// case 113: case 114:
+			case 99: return 1420070400;
+		// 2015 Xmaxx Event
+			case 119: case 123: return 1451779200;
+		// 2016 Xmaxx Event
+			case 70: case 113: case 120: case 122: case 132: case 133: case 136: return 1483228800;
+		// 2017 Xmaxx Event
+			case 72: case 111: case 135: case 142: case 143: case 144: case 145: case 146: return 1514851200;
+		// 2018 Xmaxx Event
+			case 69: case 71: case 102: case 103: case 114: case 134: case 167: case 168: case 169: return 1546300800;
+			
+		// 2013 Summer Event
+			case 84: case 85: case 87: case 88: return 1375833600;
+		// 2014 Summer Event
+			case 82: case 110: return 1408924800;
+		// 2015 Summer Event
+			case 109: return 1441065600;
+		// 2016 Summer Event
+			case 116: case 125: case 127: return 1471392000;
+		// 2017 Summer Event
+			case 126: case 138: case 139: case 140: return 1502496000;
+		// 2018 Surf n' Turf Event
+			case 81: case 83: case 115: case 128: case 156: case 157: case 158: case 159: case 160: return 1532044800;
+			
+		// 2013 Halloween Event
+		// 2014 Halloween Event
+			case 98: return 1414713600;
+		// 2015 Halloween Event
+			case 117: return 1446336000;
+		// 2016 Hallowampus Event
+		// 2017 Hallowampus Event
+			case 118: case 130: case 131: case 141: return 1509494400;
+			
+		// Popularity Contest ended by 2.0 update
+			case 50: case 57: return 1430179200;
+			
+		// 2018 Spring Fever Event
+			case 149: case 150: case 151: case 152: return 1522540800;
+			
+		// 2018 PAC Event
+			case 154: case 155: return 1526601600;
+			
+		// 2018 Back 2 School Event
+			// case 161: case 162: case 163: case 165:
+			case 164: return 1539129600;
+		// 2019 Back 2 School Event
+			case 161: case 162: case 163: case 165: case 184: case 185: case 186: case 187: case 188: return 1570172400;
+			
+		// Nitro transactions removed June 17th 2019
+			case 21: return 1560776400;
+			
+		// Season 21 (ended July 14th 2019)
+			case 177: case 178: return 1563062400;
+			
+		// season 22 (ended Aug 30th 2019)
+			case 181: case 182: case 183: return 1567166400;
+			
+			default: return System.currentTimeMillis() / 1000;
+			
+		}
 	}
 	private long carValue(JSONArray carInfo, long carId) {
 		
@@ -4299,7 +4345,7 @@ public class Commands implements MessageCreateListener {
 			racerJSON = (JSONObject) new JSONParser().parse(racerInfo.substring(racerInfo.indexOf("RACER_INFO:") + 11, racerInfo.length() - 1)); //ParseException
 		} else {
 			System.setProperty("http.agent", "Chrome");
-			URL u = new URL("https://www.nitrotype.com/api/players/" + input.substring(1));
+			URL u = new URL("https://test.nitrotype.com/api/players/" + input.substring(1));
 			u.openConnection();
 			Scanner s = new Scanner(u.openStream());
 			String racerInfo = "";
