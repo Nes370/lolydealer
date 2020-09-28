@@ -46,7 +46,7 @@ import org.json.simple.parser.ParseException;
  * </br>It also has functions to bind Discord users to their Nitro Type accounts to allow for easier access of information, as well as doubling as a form of verification for private servers.
  * </br>This bot also is capable of providing a security check when new users join a server, to identify potential abuse based upon the account's creation date, profile picture, name and other info.
  * 
- * @version 2.20200927.1105
+ * @version 2.20200928.1348
  * @author Nes370
  */
 public class Main {
@@ -110,7 +110,7 @@ public class Main {
 	
 	public static DateTimeFormatter dtf;
 	private static DiscordApi api;
-	private static String token, developerID, credentials, resourcePath, deepAIKey;
+	private static String token, developerID, credentials, resourcePath, deepAIKey, uhash;
 	private static TextChannel logChannel;
 	private static boolean logFound;
 	private static long loginStamp;
@@ -131,6 +131,7 @@ public class Main {
 		setDeveloperID(resourcePath + "Developer.txt");
 		setCredentials(resourcePath + "Credentials.txt");
 		setDeepAIKey(resourcePath + "DeepAIKey.txt");
+		setUhash(resourcePath + "Uhash.txt");
 		bookToShelf(resourcePath + "Book.json");
 		
 		if(api != null) {
@@ -528,6 +529,14 @@ public class Main {
 
 	public static void setDeepAIKey(String filepath) {
 		deepAIKey = readText(filepath);
+	}
+	
+	public static String getUhash() {
+		return uhash;
+	}
+	
+	public static void setUhash(String filepath) {
+		uhash = readText(filepath);
 	}
 	
 }

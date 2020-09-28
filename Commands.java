@@ -1,10 +1,14 @@
 package com.github.nes370.lolydealer;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -1707,7 +1711,7 @@ public class Commands implements MessageCreateListener {
 		list.stream().forEach(s -> {
 				if(s.getIcon().isPresent()) {
 					embedList.add(new EmbedBuilder().setAuthor(s.getName(), "https://discordapp.com/channels/" +  s.getIdAsString(), "")
-							.addInlineField("Owner", s.getOwner().getDiscriminatedName() + "\n" + s.getOwner().getMentionTag())
+							.addInlineField("Owner", s.getOwner().get().getDiscriminatedName() + "\n" + s.getOwner().get().getMentionTag())
 							.addInlineField("Members", "" + s.getMemberCount())
 							.addInlineField("Joined", Main.dtf.format(LocalDateTime.ofInstant(s.getJoinedAtTimestamp(Main.getApi().getYourself()).get(), ZoneId.systemDefault())))
 							.addInlineField("Server ID", s.getIdAsString())
@@ -1715,7 +1719,7 @@ public class Commands implements MessageCreateListener {
 							.setFooter("Server created").setTimestamp(s.getCreationTimestamp()));
 				} else {
 					embedList.add(new EmbedBuilder().setAuthor(s.getName(), "https://discordapp.com/channels/" +  s.getIdAsString(), "")
-							.addInlineField("Owner", s.getOwner().getDiscriminatedName() + "\n" + s.getOwner().getMentionTag())
+							.addInlineField("Owner", s.getOwner().get().getDiscriminatedName() + "\n" + s.getOwner().get().getMentionTag())
 							.addInlineField("Members", "" + s.getMemberCount())
 							.addInlineField("Joined", Main.dtf.format(LocalDateTime.ofInstant(s.getJoinedAtTimestamp(Main.getApi().getYourself()).get(), ZoneId.systemDefault())))
 							.addInlineField("Server ID", s.getIdAsString())
@@ -3527,7 +3531,7 @@ public class Commands implements MessageCreateListener {
 				adminStr += "**" + Main.getAdminCommand(k)[0] + "**: " + aCounter[k] + "\n";
 		EmbedBuilder embed = new EmbedBuilder().setTitle("Little Lamborgotti").setDescription("A Discord bot for Nitro Type users.")
 				.setAuthor("About", "https://discord.gg/KNWzUPn", "")
-				.addField("Creation", "Little Lamborgotti is a Discord Bot application created by Nes370.\nShe is written in Java and runs on Java 8.\nShe uses:\n • [Javacord library](https://github.com/Javacord/Javacord) v3.0.7\n • [Fangyidong's JSON Simple library](https://github.com/fangyidong/json-simple) v1.1.1.\nYou can read her source code on [GitHub](https://github.com/Nes370/lolydealer)")
+				.addField("Creation", "Little Lamborgotti is a Discord Bot application created by Nes370.\nShe is written in Java and runs on Java 8.\nShe uses:\n • [Javacord library](https://github.com/Javacord/Javacord) v3.1.0\n • [Fangyidong's JSON Simple library](https://github.com/fangyidong/json-simple) v1.1.1\nYou can read her source code on [GitHub](https://github.com/Nes370/lolydealer)")
 				.addField("Support Development", "\nIf you'd like to support the developer, consider making a one-time donation via [PayPal](https://paypal.me/nes370) or become a patron at [Patreon](https://www.patreon.com/nes370).")
 				.addField("Invite/Contact", "If you wish to add this bot to your server, please use the following link:\nhttps://discord.com/api/oauth2/authorize?client_id=455132593642536983&permissions=0&scope=bot\nIf you have any further queries, contact " + Main.getDeveloperID() + " (Nes#9856) on Discord.").setColor(new Color(30, 144, 255))
 				.addInlineField("Runtime", timeStr)
@@ -3667,7 +3671,7 @@ public class Commands implements MessageCreateListener {
 			racerInfo = getRacerInfo(username);
 			userID = (long) racerInfo.get("userID");
 		} catch (StringIndexOutOfBoundsException | ParseException sioobe) {
-			/*
+			
 			try {
 				JSONArray searchResults = searchPlayers(username);
 				System.out.println(searchResults.toJSONString());
@@ -3701,7 +3705,7 @@ public class Commands implements MessageCreateListener {
 				//if(userID == 0)
 					return new EmbedBuilder().setDescription("**" + username + "** does not appear to be a valid Nitro Type username or ID." + description).setColor(Color.YELLOW).setFooter("Warning for " + displayName);
 			} catch(ParseException pe2) { description += "\nAdditionally, a player search request from NT failed to parse."; }
-			*/
+			
 			//if(userID == 0)
 			return new EmbedBuilder().setDescription("**" + username + "** does not appear to be a valid Nitro Type username or ID." + description).setColor(Color.YELLOW).setFooter("Warning for " + displayName);
 		}
@@ -3936,12 +3940,12 @@ public class Commands implements MessageCreateListener {
 			
 		}
 	}
-	private long carValue(JSONArray carInfo, long carId) {
+	private long carValue(JSONArray carInfo, long carID) {
 		
-		System.out.printf("carValue(JSONArray, %d)%n", carId);
+	//	System.out.printf("carValue(JSONArray, %d)%n", carID);
 		
 		for(int i = 0; i < carInfo.size(); i++)
-			if(carId == (long) ((JSONObject) carInfo.get(i)).get("carID"))
+			if(carID == (long) ((JSONObject) carInfo.get(i)).get("carID"))
 				return (long) ((JSONObject) carInfo.get(i)).get("price");
 		return 0;
 	}
@@ -4307,55 +4311,56 @@ public class Commands implements MessageCreateListener {
 		}
 		return null;
 	}
-	private JSONObject getRacerInfo(String input) throws IOException, ParseException, StringIndexOutOfBoundsException {
-		
-		System.out.printf("getRacerInfo(%s)%n", input);
-		
-		if(input.startsWith("<@") && input.endsWith(">")) {
-			if(input.startsWith("<@!"))
-				input = input.substring(3, input.indexOf(">"));
-			else input = input.substring(2, input.indexOf(">"));
-		}
-		if(isLong(input)) {
-			JSONArray register = (JSONArray) Main.readJSON(Main.getResourcePath() + "Register.json");
-			for(int i = 0; i < register.size(); i++)
-				if(((Long) ((JSONObject) register.get(i)).get("discordId")).longValue() == Long.parseLong(input)) {
-					input = (String) ((JSONObject) register.get(i)).get("username");
-					break;
-				}
-		}
-		if(input.contains("nitrotype.com/racer/"))
-			input = input.substring(input.indexOf("nitrotype.com/racer/") + 20);
-		
-		boolean api = false;
-		if(input.startsWith("#") && isLong(input.substring(1))) 
-			api = true;
-		
-		JSONObject racerJSON;
-		if(!api) {
-			System.setProperty("http.agent", "Chrome");
-			URL u = new URL("https://www.nitrotype.com/racer/" + input); //MalformedURLException
-			u.openConnection(); //IOException
-			Scanner s = new Scanner(u.openStream()); //IOException
-			String racerInfo = "";
-			while(s.hasNext())
-				if((racerInfo = s.nextLine()).contains("RACER_INFO"))
-					break;
-			s.close();
-			racerJSON = (JSONObject) new JSONParser().parse(racerInfo.substring(racerInfo.indexOf("RACER_INFO:") + 11, racerInfo.length() - 1)); //ParseException
-		} else {
-			System.setProperty("http.agent", "Chrome");
-			URL u = new URL("https://test.nitrotype.com/api/players/" + input.substring(1));
-			u.openConnection();
-			Scanner s = new Scanner(u.openStream());
-			String racerInfo = "";
-			racerInfo = s.nextLine();
-			s.close();
-			racerJSON = (JSONObject) ((JSONObject) new JSONParser().parse(racerInfo)).get("data");
-		}
-		book(racerJSON);
-		return racerJSON;
+private JSONObject getRacerInfo(String input) throws IOException, ParseException, StringIndexOutOfBoundsException {
+	
+	System.out.printf("getRacerInfo(%s)%n", input);
+	
+	if(input.startsWith("<@") && input.endsWith(">")) {
+		if(input.startsWith("<@!"))
+			input = input.substring(3, input.indexOf(">"));
+		else input = input.substring(2, input.indexOf(">"));
 	}
+	if(isLong(input)) {
+		JSONArray register = (JSONArray) Main.readJSON(Main.getResourcePath() + "Register.json");
+		for(int i = 0; i < register.size(); i++)
+			if(((Long) ((JSONObject) register.get(i)).get("discordId")).longValue() == Long.parseLong(input)) {
+				// TODO use ID over username if possible
+				input = (String) ((JSONObject) register.get(i)).get("username");
+				break;
+			}
+	}
+	if(input.contains("nitrotype.com/racer/"))
+		input = input.substring(input.indexOf("nitrotype.com/racer/") + 20);
+	
+	boolean api = false;
+	if(input.startsWith("#") && isLong(input.substring(1))) 
+		api = true;
+	
+	JSONObject racerJSON;
+	if(!api) {
+		System.setProperty("http.agent", "Chrome");
+		URL u = new URL("https://www.nitrotype.com/racer/" + input); //MalformedURLException
+		u.openConnection(); //IOException
+		Scanner s = new Scanner(u.openStream()); //IOException
+		String racerInfo = "";
+		while(s.hasNext())
+			if((racerInfo = s.nextLine()).contains("RACER_INFO"))
+				break;
+		s.close();
+		racerJSON = (JSONObject) new JSONParser().parse(racerInfo.substring(racerInfo.indexOf("RACER_INFO:") + 11, racerInfo.length() - 1)); //ParseException
+	} else {
+		System.setProperty("http.agent", "Chrome");
+		URL u = new URL("https://test.nitrotype.com/api/players/" + input.substring(1));
+		u.openConnection();
+		Scanner s = new Scanner(u.openStream());
+		String racerInfo = "";
+		racerInfo = s.nextLine();
+		s.close();
+		racerJSON = (JSONObject) ((JSONObject) new JSONParser().parse(racerInfo)).get("data");
+	}
+	book(racerJSON);
+	return racerJSON;
+}
 	@SuppressWarnings("unchecked")
 	private void book(JSONObject racerJSON) {
 		JSONObject book = (JSONObject) Main.readJSON(Main.getResourcePath() + "Book.json");
@@ -4398,17 +4403,17 @@ public class Commands implements MessageCreateListener {
 	}
 	
 	/**
-	 * Search method that was deprecated by Nitro Type.
+	 * Search for players that match the given name.
 	 * 
 	 * @param name
 	 * @return Search results
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	/*
+	
 	private JSONArray searchPlayers(String name) throws IOException, ParseException {
 		
-		Main.getLogin();
+		Main.getLogin(false);
 		
 		System.setProperty("http.agent", "Chrome");
 		URL url = new URL("https://www.nitrotype.com/api/players-search");
@@ -4420,7 +4425,7 @@ public class Commands implements MessageCreateListener {
 		http.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 		
 		DataOutputStream wr = new DataOutputStream(http.getOutputStream());
-		wr.write(("term=" + name + "&uhash=<insert uhash here>").getBytes(StandardCharsets.UTF_8));
+		wr.write(("term=" + name + "&uhash=" + Main.getUhash()).getBytes(StandardCharsets.UTF_8));
 		wr.flush();
 		wr.close();
 
@@ -4448,6 +4453,6 @@ public class Commands implements MessageCreateListener {
 		JSONObject result = (JSONObject) new JSONParser().parse(response.toString());
 		System.out.println(result.toJSONString());
 		return (JSONArray) result.get("data");
-	} */
+	}
 	
 }
