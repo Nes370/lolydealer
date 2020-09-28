@@ -19,7 +19,7 @@ An overview of this project:
 Little Lamborgotti is a Discord Bot application created by Nes370.
 She is written in Java and runs on Java 8.
 Her dependencies include:
-- [Javacord library](https://github.com/Javacord/Javacord) v3.0.7
+- [Javacord library](https://github.com/Javacord/Javacord) v3.1.0
 - [Fangyidong's JSON Simple library](https://github.com/fangyidong/json-simple) v1.1.1
 
 ## Support Development
