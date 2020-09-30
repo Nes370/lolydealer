@@ -2892,6 +2892,22 @@ public class Commands implements MessageCreateListener {
 				}
 				
 				{
+					String tag = (String) racerJSON.get("tag");
+					
+					roleSwitch(tag != null && tag.equals("NTV"), server.getRoleById(760345608103526410L).get(), roles, user);
+					
+					String name = "";
+					if(tag != null && !tag.equals("") && !tag.equals("null"))
+						name += "[" + tag + "] ";
+					String displayName = (String) racerJSON.get("displayName");
+					if(displayName != null && !displayName.equals("") && !displayName.equals("null")) {
+						name += displayName;
+					} else name += (String) racerJSON.get("username");
+					
+					user.updateNickname(server, name).get();
+				}
+				
+				{
 					JSONArray raceLogs = (JSONArray) racerJSON.get("raceLogs");
 					
 					if(raceLogs == null) {
@@ -2962,19 +2978,6 @@ public class Commands implements MessageCreateListener {
 					roleSwitch(racesPlayed >= 200_000 && racesPlayed < 250_000, races[14], roles, user);
 					roleSwitch(racesPlayed >= 250_000 && racesPlayed < 500_000, races[15], roles, user);
 					roleSwitch(racesPlayed >= 500_000, races[16], roles, user);
-				}
-				
-				{
-					String tag = (String) racerJSON.get("tag");
-					String name = "";
-					if(tag != null && !tag.equals("") && !tag.equals("null"))
-						name += "[" + tag + "] ";
-					String displayName = (String) racerJSON.get("displayName");
-					if(displayName != null && !displayName.equals("") && !displayName.equals("null")) {
-						name += displayName;
-					} else name += (String) racerJSON.get("username");
-					
-					user.updateNickname(server, name).get();
 				}
 				
 			}

@@ -80,6 +80,7 @@ public class Overwatch implements ServerMemberJoinListener {
 	@SuppressWarnings({ "unchecked", "null" })
 	@Override
 	public void onServerMemberJoin(ServerMemberJoinEvent event) {
+		System.out.println("Member joined");
 		// TODO Auto-generated method stub
 		String suspect = "";
 		String name = event.getUser().getName();

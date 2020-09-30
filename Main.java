@@ -27,6 +27,7 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -46,7 +47,7 @@ import org.json.simple.parser.ParseException;
  * </br>It also has functions to bind Discord users to their Nitro Type accounts to allow for easier access of information, as well as doubling as a form of verification for private servers.
  * </br>This bot also is capable of providing a security check when new users join a server, to identify potential abuse based upon the account's creation date, profile picture, name and other info.
  * 
- * @version 2.20200928.1348
+ * @version 2.20200930.0031
  * @author Nes370
  */
 public class Main {
@@ -140,6 +141,7 @@ public class Main {
 		
 		api = new DiscordApiBuilder()
 				.setToken(getToken())
+				.setAllIntentsExcept(Intent.GUILD_PRESENCES)
 				.login()
 				.join();
 		
