@@ -4341,6 +4341,7 @@ private JSONObject getRacerInfo(String input) throws IOException, ParseException
 	
 	JSONObject racerJSON;
 	if(!api) {
+		/*
 		System.setProperty("http.agent", "Chrome");
 		URL u = new URL("https://www.nitrotype.com/racer/" + input); //MalformedURLException
 		u.openConnection(); //IOException
@@ -4350,6 +4351,9 @@ private JSONObject getRacerInfo(String input) throws IOException, ParseException
 			if((racerInfo = s.nextLine()).contains("RACER_INFO"))
 				break;
 		s.close();
+		*/
+		racerInfo = request("https://www.nitrotype.com/racer/" + input)
+			
 		racerJSON = (JSONObject) new JSONParser().parse(racerInfo.substring(racerInfo.indexOf("RACER_INFO:") + 11, racerInfo.length() - 1)); //ParseException
 	} else {
 		System.setProperty("http.agent", "Chrome");
@@ -4363,6 +4367,56 @@ private JSONObject getRacerInfo(String input) throws IOException, ParseException
 	}
 	book(racerJSON);
 	return racerJSON;
+}
+private String request(url){
+        /*
+        INPUT: request URL for Nitrotype user page
+        OUTPUT: nitrotype HTML on that page (contains the user information that can be parsed later)
+
+        Made by Xplode#6491
+
+        */
+
+        String response = "";
+        try {
+
+            // Obtaining the current runtime
+            Runtime rt = Runtime.getRuntime();
+
+            /*
+            Python script for grabbing the html by bypassing cloudflare
+            Install cloudflare bypass with "pip install cloudscraper"
+
+            FULL CODE:
+
+            import cloudscraper
+            scraper = cloudscraper.create_scraper()
+            print(scraper.get(url).text) # performs a GET request and returns a string
+
+             */
+            // String.format is used because I did not want to figure out how to get the url variable inside that mess
+            Process pr = rt.exec(String.format("python -c \"import cloudscraper; scraper = cloudscraper.create_scraper(); print(scraper.get('%s').text)\"", url));
+
+            // Get the input stream so we can read the output of the command line
+            BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+
+            String line=null;
+            // Adding each line to the "response" string
+            while((line=input.readLine()) != null) {
+                System.out.println(line);
+                response = response + line;
+            }
+            // error code if you need it
+            int exitVal = pr.waitFor();
+            System.out.println("Exited with error code "+exitVal);
+
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            e.printStackTrace();
+        }
+        return response;
+	
+	
 }
 	@SuppressWarnings("unchecked")
 	private void book(JSONObject racerJSON) {
